@@ -14,16 +14,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import domain.Bidouille;
-import domain.BidouilleRepository;
+import domain.Fiddle;
+import domain.FiddleRepository;
 
-@Path("/bidouille")
+@Path("/fiddle/with")
 @Produces(MediaType.APPLICATION_JSON)
-public class BidouilleResource {
+public class FiddleResource {
 
-	private final BidouilleRepository repo;
+	private final FiddleRepository repo;
 	
-	public BidouilleResource(final BidouilleRepository repo) {
+	public FiddleResource(final FiddleRepository repo) {
 		this.repo = repo;
 	}
 	
@@ -31,14 +31,12 @@ public class BidouilleResource {
 	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response execute(@QueryParam("id") final String id, final String body) throws JsonProcessingException, IOException {
-		final Bidouille bidouille = repo.find(id);
+		final Fiddle fiddle = repo.find(id);
 
 		final ObjectMapper mapper = new ObjectMapper();
-		final JsonNode data = mapper.readTree(body);
+		final JsonNode json = mapper.readTree(body);
 
-		data.get(index)
-		
-		bidouille.execute(data);
+		fiddle.execute(json);
 		
 		return null;
 	}

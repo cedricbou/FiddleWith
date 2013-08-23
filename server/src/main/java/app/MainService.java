@@ -1,6 +1,6 @@
 package app;
 
-import ressources.BidouilleResource;
+import ressources.FiddleResource;
 import cli.AppConfiguration;
 
 import com.yammer.dropwizard.Service;
@@ -9,7 +9,7 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.views.ViewBundle;
 
-import domain.BidouilleRepository;
+import domain.FiddleRepository;
 
 public class MainService extends Service<AppConfiguration> {
 
@@ -27,6 +27,6 @@ public class MainService extends Service<AppConfiguration> {
 
 	@Override
 	public void run(AppConfiguration config, Environment env) throws Exception {
-		env.addResource(new BidouilleResource(new BidouilleRepository()));
+		env.addResource(new FiddleResource(new FiddleRepository()));
 	}
 }
