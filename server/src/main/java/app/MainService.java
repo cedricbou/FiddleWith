@@ -7,8 +7,10 @@ import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import com.yammer.dropwizard.jdbi.DBIFactory;
 import com.yammer.dropwizard.views.ViewBundle;
 
+import domain.FiddleEnvironment;
 import domain.FiddleRepository;
 
 public class MainService extends Service<AppConfiguration> {
@@ -27,6 +29,8 @@ public class MainService extends Service<AppConfiguration> {
 
 	@Override
 	public void run(AppConfiguration config, Environment env) throws Exception {
-		env.addResource(new FiddleResource(new FiddleRepository()));
+		final DBIFactory factory = new DBIFactory();
+		
+		env.addResource(new FiddleResource(new FiddleRepository(), new FiddleEnvironment(env, factory)));
 	}
 }

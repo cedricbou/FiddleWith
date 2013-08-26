@@ -7,6 +7,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import domain.Fiddle;
+import domain.FiddleEnvironment;
 import domain.FiddleRepository;
 
 @Path("/fiddle/with")
@@ -23,8 +25,11 @@ public class FiddleResource {
 
 	private final FiddleRepository repo;
 	
-	public FiddleResource(final FiddleRepository repo) {
+	private final FiddleEnvironment env;
+	
+	public FiddleResource(final FiddleRepository repo, FiddleEnvironment env) {
 		this.repo = repo;
+		this.env = env;
 	}
 	
 	@POST
@@ -36,8 +41,6 @@ public class FiddleResource {
 		final ObjectMapper mapper = new ObjectMapper();
 		final JsonNode json = mapper.readTree(body);
 
-		fiddle.execute(json);
-		
-		return null;
+		return fiddle.execute(json, env.databases());
 	}
 }

@@ -1,8 +1,10 @@
 package domain;
 
+import javax.ws.rs.core.Response;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 public interface Fiddle {
 
-	public void execute(final JsonNode params);
+	public Response execute(final JsonNode data, final FiddleDb db);
 }
