@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import domain.Fiddle;
-import domain.FiddleDb;
+import domain.FiddleEnvironment;
 import domain.FiddleResponse;
 import domain.json.serializer.RubyJacksonModule;
 
@@ -22,17 +22,23 @@ public class JRubyFiddle implements Fiddle {
 	{
 		mapper.registerModule(RubyJacksonModule.MODULE);
 	}
+	
+	private final FiddleEnvironment env;
+	
+	public JRubyFiddle(final FiddleEnvironment env) {
+		this.env = env;
+	}
 
 	@Override
-	public Response execute(final JsonNode data, final FiddleDb db) {
+	public Response execute(final JsonNode data) {
 
 		final ScriptingContainer ruby = new ScriptingContainer(
-				LocalVariableBehavior.PERSISTENT);
+				LocalVariableBehavior.TRANSIENT);
 
 		// Assign the Java objects that you want to share
 		ruby.put("response", new FiddleResponse(mapper));
 		ruby.put("json", data);
-		ruby.put("db", db);
+		ruby.put("sql", env.ruby.sql);
 
 		// Execute a script (can be of any length, and taken from a file)
 

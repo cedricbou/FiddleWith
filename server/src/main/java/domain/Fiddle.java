@@ -6,5 +6,5 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface Fiddle {
 
-	public Response execute(final JsonNode data, final FiddleDb db);
+	public Response execute(final JsonNode data);
 }

@@ -15,9 +15,8 @@ class Pet
 	end
 end
 
-1.times {
-	puts data.person.name.last.to_s + " " + data.person.name.first.to_s
-}
+h = sql.local.singleLine("select 'toto' as t1, 'titi' as t2");
+response.ok(h)
 
 #db.local.withHandle do |h|
 #  h.createQuery("select 'toto' as name").each do |rs|
@@ -25,6 +24,6 @@ end
 #  end
 #end
 
-p = Person.new("toto")
+# p = Person.new("toto")
 
-response.ok(p)
+# response.ok(p)

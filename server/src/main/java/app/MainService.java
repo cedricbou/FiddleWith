@@ -11,7 +11,6 @@ import com.yammer.dropwizard.jdbi.DBIFactory;
 import com.yammer.dropwizard.views.ViewBundle;
 
 import domain.FiddleEnvironment;
-import domain.FiddleRepository;
 
 public class MainService extends Service<AppConfiguration> {
 
@@ -21,7 +20,7 @@ public class MainService extends Service<AppConfiguration> {
 
 	@Override
 	public void initialize(Bootstrap<AppConfiguration> bootstrap) {
-		bootstrap.setName("net-bidouilles");
+		bootstrap.setName("fiddle-with");
 		bootstrap.addCommand(new cli.RubyCommand());
 		bootstrap.addBundle(new AssetsBundle("/assets/", "/"));
 		bootstrap.addBundle(new ViewBundle());
@@ -31,6 +30,7 @@ public class MainService extends Service<AppConfiguration> {
 	public void run(AppConfiguration config, Environment env) throws Exception {
 		final DBIFactory factory = new DBIFactory();
 		
-		env.addResource(new FiddleResource(new FiddleRepository(), new FiddleEnvironment(env, factory)));
+		env.addResource(new FiddleResource(
+				new FiddleEnvironment(config.sql(env, factory))));
 	}
 }
