@@ -29,8 +29,9 @@ public class MainService extends Service<AppConfiguration> {
 	@Override
 	public void run(AppConfiguration config, Environment env) throws Exception {
 		final DBIFactory factory = new DBIFactory();
+
 		
 		env.addResource(new FiddleResource(
-				new FiddleEnvironment(config.sql(env, factory))));
+				new FiddleEnvironment(config.sql(env, factory), config.fiddleRepository())));
 	}
 }

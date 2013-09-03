@@ -1,7 +1,5 @@
 package domain.ruby;
 
-import java.io.File;
-
 import javax.ws.rs.core.Response;
 
 import org.jruby.embed.LocalVariableBehavior;
@@ -11,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import domain.Fiddle;
-import domain.FiddleEnvironment;
 import domain.FiddleResponse;
 import domain.json.serializer.RubyJacksonModule;
 
@@ -23,10 +20,12 @@ public class JRubyFiddle implements Fiddle {
 		mapper.registerModule(RubyJacksonModule.MODULE);
 	}
 	
-	private final FiddleEnvironment env;
+	private final RubyEnv env;
+	private final RubyScript script;
 	
-	public JRubyFiddle(final FiddleEnvironment env) {
+	public JRubyFiddle(final RubyEnv env, final RubyScript script) {
 		this.env = env;
+		this.script = script;
 	}
 
 	@Override
@@ -38,12 +37,11 @@ public class JRubyFiddle implements Fiddle {
 		// Assign the Java objects that you want to share
 		ruby.put("response", new FiddleResponse(mapper));
 		ruby.put("json", data);
-		ruby.put("sql", env.ruby.sql);
+		ruby.put("sql", env.sql);
 
 		// Execute a script (can be of any length, and taken from a file)
 
-		Object result = ruby.runScriptlet(new RubyScript(new File(
-				"./src/main/config/tryit.rb")).script);
+		Object result = ruby.runScriptlet(script.script);
 
 		// Use the result as if it were a Java object
 		System.out.println(result);
@@ -54,5 +52,10 @@ public class JRubyFiddle implements Fiddle {
 			return Response.status(500)
 					.tag("Script did not return response object").build();
 		}
+	}
+	
+	@Override
+	public String getScript() {
+		return script.userScript;
 	}
 }

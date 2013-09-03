@@ -16,7 +16,7 @@ class Pet
 end
 
 h = sql.local.singleLine("select 'toto' as t1, 'titi' as t2");
-response.ok(h)
+response.ok(data.to_hash)
 
 #db.local.withHandle do |h|
 #  h.createQuery("select 'toto' as name").each do |rs|

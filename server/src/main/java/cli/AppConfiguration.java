@@ -1,5 +1,7 @@
 package cli;
 
+import java.io.File;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -21,6 +23,11 @@ public class AppConfiguration extends Configuration {
 	@NotNull
 	@JsonProperty
 	private ImmutableMap<String, DatabaseConfiguration> sql;
+	
+	@Valid
+	@NotNull
+	@JsonProperty
+	private File fiddleRepository = new File(System.getProperty( "user.home" ));
 
 	public FiddleSqlRegistry sql(final Environment env, final DBIFactory factory) {
 		final FiddleSqlRegistry registry = new FiddleSqlRegistry();
@@ -44,6 +51,10 @@ public class AppConfiguration extends Configuration {
 			}
 		}
 		return registry;
+	}
+	
+	public File fiddleRepository() {
+		return fiddleRepository;
 	}
 
 }

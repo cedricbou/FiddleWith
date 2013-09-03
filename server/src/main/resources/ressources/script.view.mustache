@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>View script</title>
+<style type="text/css" media="screen">
+    #editor { 
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
+</head>
+<body>
+
+<div id="editor">{{script}}</div>
+    
+<script src="/ace/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/ruby");
+    // editor.setReadOnly(true);
+	
+	// Change title on change (add star to notify modifications).
+	editor.getSession().on('change',function(){
+  		if(document.title.indexOf("* ") < 0) {
+  			document.title = "* " + document.title;
+  		}
+	});
+	
+	editor.commands.addCommand({
+		name: 'saveFile',
+		bindKey: {
+			win: 'Ctrl-S',
+			mac: 'Command-S',
+			sender: 'editor|cli'
+		},
+		exec: function(env, args, request) {
+			alert("HI! Should save content there");
+			document.title = document.title.substring(2)
+		}
+	});
+	
+</script>
+</body>
+</html>
