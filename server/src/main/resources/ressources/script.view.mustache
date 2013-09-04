@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>View script</title>
+<title>{{id}} [{{language}}]</title>
 <style type="text/css" media="screen">
     #editor { 
         position: absolute;
@@ -15,7 +15,8 @@
 <body>
 
 <div id="editor">{{script}}</div>
-    
+ 
+<script src="/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>    
 <script src="/ace/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 
 <script>
@@ -39,8 +40,12 @@
 			sender: 'editor|cli'
 		},
 		exec: function(env, args, request) {
-			alert("HI! Should save content there");
-			document.title = document.title.substring(2)
+			$.ajax({
+   				url: '/api/fiddle/with/{{id}}/save',
+    			type: 'PUT',
+   				data: editor.getSession().getValue(),
+    			success: function() { document.title = document.title.substring(2) }
+			});
 		}
 	});
 	

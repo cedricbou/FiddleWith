@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import domain.Fiddle;
 import domain.FiddleResponse;
 import domain.json.serializer.RubyJacksonModule;
+import domain.repo.Language;
 
 public class JRubyFiddle implements Fiddle {
 
@@ -57,5 +58,15 @@ public class JRubyFiddle implements Fiddle {
 	@Override
 	public String getScript() {
 		return script.userScript;
+	}
+	
+	@Override
+	public Language getLanguage() {
+		return Language.RUBY;
+	}
+	
+	@Override
+	public Fiddle withScript(String content) {
+		return new JRubyFiddle(env, new RubyScript(content));
 	}
 }

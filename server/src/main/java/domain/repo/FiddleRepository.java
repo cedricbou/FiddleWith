@@ -1,12 +1,12 @@
 package domain.repo;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.google.common.base.Optional;
 import com.google.common.io.Files;
 
 import domain.Fiddle;
-import domain._404Fiddle;
 import domain.ruby.JRubyFiddle;
 import domain.ruby.RubyEnv;
 import domain.ruby.RubyScript;
@@ -14,36 +14,51 @@ import domain.ruby.RubyScript;
 public class FiddleRepository {
 
 	private final RubyEnv env;
-	
+
 	private final File fiddleRepository;
-	
-	private final static String[] SUFFIXES = new String[] {
-		".rb"
-	};
-		
+
 	public FiddleRepository(final File fiddleRepository, final RubyEnv env) {
 		this.env = env;
 		this.fiddleRepository = fiddleRepository;
 	}
-	
-	public Fiddle find(final String id) {
-		Optional<File> scriptFile = findFile(id);
-		if(scriptFile.isPresent()) {
-			if(Files.getFileExtension(scriptFile.get().getAbsolutePath()).equals("rb")) {
-				return new JRubyFiddle(env, new RubyScript(scriptFile.get()));
+
+	public Optional<? extends Fiddle> find(final String id) {
+		final Optional<File> scriptFile = findFile(id);
+
+		if (scriptFile.isPresent()) {
+			try {
+				if (Files.getFileExtension(scriptFile.get().getAbsolutePath())
+						.equals(Language.RUBY.suffix)) {
+					return Optional.of(new JRubyFiddle(env, new RubyScript(
+							scriptFile.get())));
+				}
+			} catch (IOException e) {
+				return Optional.absent();
 			}
 		}
-		return new _404Fiddle("no such fiddle '" + id + "' (" + scriptFile.toString() + ")");
+
+		return Optional.absent();
+	}
+
+	public Fiddle replace(final String id, final Fiddle fiddle)
+			throws IOException {
+		final File to = buildFile(id, fiddle.getLanguage());
+		Files.write(fiddle.getScript().getBytes(), to);
+		return fiddle;
 	}
 
 	private Optional<File> findFile(final String id) {
-		for(final String suffix : SUFFIXES) {
-			final File candidate = new File(fiddleRepository, id + suffix);
-			if(candidate.exists() && candidate.canRead()) {
+		for (final Language lang : Language.values()) {
+			final File candidate = new File(fiddleRepository, id + "." + lang.suffix);
+			if (candidate.exists() && candidate.canRead()) {
 				return Optional.of(candidate);
 			}
 		}
 		return Optional.absent();
 	}
-	
+
+	private File buildFile(final String id, final Language lang) {
+		return new File(fiddleRepository, id + "." + lang.suffix);
+	}
+
 }
