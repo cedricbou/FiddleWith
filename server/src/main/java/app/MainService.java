@@ -1,11 +1,14 @@
 package app;
 
+import org.apache.http.client.HttpClient;
+
 import ressources.FiddleResource;
-import cli.AppConfiguration;
+import ressources.TemplateResource;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.auth.basic.BasicAuthProvider;
+import com.yammer.dropwizard.client.HttpClientBuilder;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.jdbi.DBIFactory;
@@ -32,8 +35,17 @@ public class MainService extends Service<AppConfiguration> {
 	public void run(AppConfiguration config, Environment env) throws Exception {
 		final DBIFactory factory = new DBIFactory();
 
+		final HttpClient httpClient = new HttpClientBuilder().using(config.defaultHttpClient())
+                .build();
+
 		env.addProvider(new BasicAuthProvider<User>(new AdminAuthenticator(), "fiddle"));
-		env.addResource(new FiddleResource(
-				new FiddleEnvironment(config.sql(env, factory), config.fiddleRepository())));
+		
+		final FiddleEnvironment fidEnv = new FiddleEnvironment(
+				config.sql(env, factory),
+				config.fiddleRepository(),
+				httpClient);
+		
+		env.addResource(new FiddleResource(fidEnv));
+		env.addResource(new TemplateResource(fidEnv));
 	}
 }

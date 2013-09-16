@@ -3,14 +3,15 @@ package ressources;
 import com.yammer.dropwizard.views.View;
 
 import domain.Fiddle;
+import domain.FiddleId;
 import domain.repo.Language;
 
 public class ScriptView extends View {
 
 	private final Fiddle fiddle;
-	private final String id;
+	private final FiddleId id;
 	
-	public ScriptView(final String id, final Fiddle fiddle) {
+	public ScriptView(final FiddleId id, final Fiddle fiddle) {
 		super("script.view.mustache");
 		this.fiddle = fiddle;
 		this.id = id;
@@ -21,7 +22,7 @@ public class ScriptView extends View {
 	}
 	
 	public String getId() {
-		return id;
+		return id.toString();
 	}
 	
 	public Language getLanguage() {

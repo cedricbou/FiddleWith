@@ -1,4 +1,4 @@
-package cli;
+package app;
 
 import java.io.File;
 
@@ -9,6 +9,7 @@ import org.skife.jdbi.v2.DBI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import com.yammer.dropwizard.client.HttpClientConfiguration;
 import com.yammer.dropwizard.config.Configuration;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.db.DatabaseConfiguration;
@@ -28,6 +29,11 @@ public class AppConfiguration extends Configuration {
 	@NotNull
 	@JsonProperty
 	private File fiddleRepository = new File(System.getProperty( "user.home" ));
+	
+	@Valid
+	@NotNull
+	@JsonProperty
+	private HttpClientConfiguration defaultHttpClient = new HttpClientConfiguration();
 
 	public FiddleSqlRegistry sql(final Environment env, final DBIFactory factory) {
 		final FiddleSqlRegistry registry = new FiddleSqlRegistry();
@@ -55,6 +61,10 @@ public class AppConfiguration extends Configuration {
 	
 	public File fiddleRepository() {
 		return fiddleRepository;
+	}
+	
+	public HttpClientConfiguration defaultHttpClient() {
+		return defaultHttpClient;
 	}
 
 }
