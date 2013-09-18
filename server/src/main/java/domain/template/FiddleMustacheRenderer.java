@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.FallbackMustacheFactory;
@@ -25,12 +26,13 @@ public class FiddleMustacheRenderer implements FiddleTemplateRenderer {
 	private final LoadingCache<WorkspaceId, MustacheFactory> factories;
 
 	public FiddleMustacheRenderer(final File fiddleRepository) {
-		this.factories = CacheBuilder.newBuilder().build(
+		this.factories = CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.SECONDS).build(
 				new CacheLoader<WorkspaceId, MustacheFactory>() {
 					@Override
 					public MustacheFactory load(WorkspaceId id)
 							throws Exception {
 						final File common = new File(fiddleRepository, WorkspaceId.COMMON.toString());
+						
 						if(common.exists() && common.canRead()) {
 							return new FallbackMustacheFactory(new File(
 								fiddleRepository, id.toString()), common);
@@ -61,5 +63,11 @@ public class FiddleMustacheRenderer implements FiddleTemplateRenderer {
 			throw new FileNotFoundException("Template " + templateId + "("
 					+ workspaceId + ") not found !(" + e.getMessage() + ")");
 		}
+	}
+	
+	@Override
+	public void clearCaches() {
+		factories.invalidateAll();
+		factories.cleanUp();
 	}
 }

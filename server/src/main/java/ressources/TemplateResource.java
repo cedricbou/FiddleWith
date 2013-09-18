@@ -28,6 +28,14 @@ public class TemplateResource {
 		}
 		
 		@GET
+		@Path("/clear")
+		@Produces(MediaType.APPLICATION_JSON)
+		public String clear() {
+			env.templates.clearCaches();
+			return "caches cleared";
+		}
+		
+		@GET
 		@Path("/{workspaceId}/{tpl}")
 		@Produces(MediaType.TEXT_PLAIN)
 		public Response compileTemplate(

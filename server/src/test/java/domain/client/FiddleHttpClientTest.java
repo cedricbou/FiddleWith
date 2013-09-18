@@ -32,6 +32,10 @@ public class FiddleHttpClientTest {
 				output.write("{\"f\":\"sqsds\", \"g\":\"bx\"}".getBytes());
 				output.close();
 			}
+			
+			@Override
+			public void clearCaches() {
+			}
 		};
 		
 		final FiddleHttpClient client = new FiddleHttpClient(renderer, new HttpClientBuilder().build());

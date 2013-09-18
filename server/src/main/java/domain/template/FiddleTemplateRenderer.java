@@ -12,4 +12,6 @@ public interface FiddleTemplateRenderer {
 	public void render(final Object entity, final WorkspaceId workspaceId,
 			final TemplateId templateId, Locale locale, OutputStream output)
 			throws IOException;
+	
+	public void clearCaches();
 }
