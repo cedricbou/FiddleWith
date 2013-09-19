@@ -16,6 +16,6 @@ public class JRubySqlRegistry {
 	}
 	
 	public JRubySqlReadOnlyAdapter get(final String name) {
-		return new JRubySqlReadOnlyAdapter(registry.get(name), ruby);
+		return new JRubySqlReadOnlyAdapter(registry.getRO(name), ruby);
 	}
 }

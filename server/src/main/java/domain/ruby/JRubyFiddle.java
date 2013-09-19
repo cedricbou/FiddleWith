@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import domain.Fiddle;
+import domain.FiddleEnvironment;
 import domain.FiddleResponse;
+import domain.WorkspaceId;
 import domain.json.serializer.RubyJacksonModule;
 import domain.repo.Language;
 
@@ -21,12 +23,14 @@ public class JRubyFiddle implements Fiddle {
 		mapper.registerModule(RubyJacksonModule.MODULE);
 	}
 	
-	private final RubyEnv env;
+	private final FiddleEnvironment env;
 	private final RubyScript script;
+	private final WorkspaceId workspaceId;
 	
-	public JRubyFiddle(final RubyEnv env, final RubyScript script) {
+	public JRubyFiddle(final WorkspaceId workspaceId, final FiddleEnvironment env, final RubyScript script) {
 		this.env = env;
 		this.script = script;
+		this.workspaceId = workspaceId;
 	}
 
 	@Override
@@ -38,7 +42,8 @@ public class JRubyFiddle implements Fiddle {
 		// Assign the Java objects that you want to share
 		ruby.put("response", new FiddleResponse(mapper));
 		ruby.put("json", data);
-		ruby.put("sql", env.sql);
+		ruby.put("sql", env.ruby.sql);
+		ruby.put("http", env.ruby.http(workspaceId));
 
 		// Execute a script (can be of any length, and taken from a file)
 
@@ -67,6 +72,6 @@ public class JRubyFiddle implements Fiddle {
 	
 	@Override
 	public Fiddle withScript(String content) {
-		return new JRubyFiddle(env, new RubyScript(content));
+		return new JRubyFiddle(workspaceId, env, new RubyScript(content));
 	}
 }

@@ -1,4 +1,4 @@
-package domain.client;
+package domain.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class FiddleHttpResponse {
 		public void toward(final Redirect redirect);
 	}
 
-	public final HttpResponse r;
+	private final HttpResponse r;
 
 	public FiddleHttpResponse(final HttpResponse r) {
 		this.r = r;

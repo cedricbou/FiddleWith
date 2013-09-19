@@ -1,6 +1,7 @@
 package app;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import ressources.FiddleResource;
 import ressources.TemplateResource;
@@ -35,15 +36,16 @@ public class MainService extends Service<AppConfiguration> {
 	public void run(AppConfiguration config, Environment env) throws Exception {
 		final DBIFactory factory = new DBIFactory();
 
-		final HttpClient httpClient = new HttpClientBuilder().using(config.defaultHttpClient())
+		final HttpClient httpClient = new HttpClientBuilder().using(config.defaultHttp())
                 .build();
 
 		env.addProvider(new BasicAuthProvider<User>(new AdminAuthenticator(), "fiddle"));
 		
 		final FiddleEnvironment fidEnv = new FiddleEnvironment(
 				config.sql(env, factory),
+				config.http(),
 				config.fiddleRepository(),
-				httpClient);
+				(DefaultHttpClient)httpClient);
 		
 		env.addResource(new FiddleResource(fidEnv));
 		env.addResource(new TemplateResource(fidEnv));

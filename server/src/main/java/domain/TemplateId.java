@@ -12,6 +12,8 @@ public class TemplateId {
 	@Pattern(regexp = "^\\w+$")
 	public final String id;
 	
+	public static final TemplateId NONE = new TemplateId("__NONE__");
+	
 	public TemplateId(final String id) {
 		this.id = id;
 	}

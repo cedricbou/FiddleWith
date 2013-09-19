@@ -7,19 +7,23 @@ import com.google.common.base.Optional;
 import com.google.common.io.Files;
 
 import domain.Fiddle;
+import domain.FiddleEnvironment;
 import domain.FiddleId;
+import domain.WorkspaceId;
 import domain.ruby.JRubyFiddle;
-import domain.ruby.RubyEnv;
 import domain.ruby.RubyScript;
 
 public class FiddleWorkspace {
-	private final RubyEnv env;
+	private final FiddleEnvironment env;
 
 	private final File workspaceRepository;
+	
+	private final WorkspaceId workspaceId;
 
-	protected FiddleWorkspace(final File workspaceRepository, final RubyEnv env) {
+	protected FiddleWorkspace(final WorkspaceId workspaceId, final File workspaceRepository, final FiddleEnvironment env) {
 		this.env = env;
 		this.workspaceRepository = workspaceRepository;
+		this.workspaceId = workspaceId;
 	}
 
 	
@@ -30,7 +34,7 @@ public class FiddleWorkspace {
 			try {
 				if (Files.getFileExtension(scriptFile.get().getAbsolutePath())
 						.equals(Language.RUBY.suffix)) {
-					return Optional.of(new JRubyFiddle(env, new RubyScript(
+					return Optional.of(new JRubyFiddle(workspaceId, env, new RubyScript(
 							scriptFile.get())));
 				}
 			} catch (IOException e) {

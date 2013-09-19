@@ -46,9 +46,8 @@ public class TemplateResource {
 			final String json = ResourceJsonUtils.autoJson(uri.getQueryParameters());
 
 			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				env.templates.render(ResourceJsonUtils.jsonToMap(json), workspaceId, 
-						tplId, Locale.getDefault(), baos);
-				return Response.ok(baos.toString()).build();
+				return Response.ok(env.templates.render(ResourceJsonUtils.jsonToMap(json), workspaceId, 
+						tplId, Locale.getDefault())).build();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
