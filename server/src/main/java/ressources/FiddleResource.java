@@ -168,9 +168,11 @@ public class FiddleResource {
 				e.getCause().printStackTrace(new PrintWriter(w));
 				return Response.status(500).entity(w.toString()).build();
 			} else {
+				e.printStackTrace();
 				return Response.status(500).entity(e.getMessage()).build();
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Response.status(500).entity(e.getMessage()).build();
 		}
 	}

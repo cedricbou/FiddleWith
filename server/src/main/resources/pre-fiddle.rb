@@ -45,6 +45,21 @@ class SqlSugar
 	end
 end
 
+class HttpSugar
+	def initialize(http)
+		@http = http
+	end
+	
+	def method_missing(method_name, *args)
+		if method_name.to_s == "post" || method_name.to_s == "get" then
+			@http.send(method_name, *args)
+		else
+			@http.http(method_name.to_s)
+		end
+	end
+end
+
 sql = SqlSugar.new(sql)
+http = HttpSugar.new(http)
 data = DynaBeanWrapper.new(json)
 

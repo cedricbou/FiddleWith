@@ -12,13 +12,15 @@ import org.apache.http.entity.ContentType;
 
 import com.google.common.base.Optional;
 
+import fiddle.xml.SimpleXml;
+
 public class FiddleHttpResponse {
 
-	public static interface OnHttpStream {
-		public void read(final Optional<String> content);
+	public static interface OnSuccess {
+		public void onSuccess(final FiddleHttpResponse response);
 	}
 	
-	public static interface OnHttpError {
+	public static interface OnError {
 		public void analyse(final StatusLine statusLine);
 	}
 	
@@ -46,24 +48,26 @@ public class FiddleHttpResponse {
 		}
 	}
 	
-	public static interface OnHttpRedirect {
+	public static interface OnRedirect {
 		public void toward(final Redirect redirect);
 	}
 
 	private final HttpResponse r;
+	
+	private Optional<String> text = Optional.absent();
 
 	public FiddleHttpResponse(final HttpResponse r) {
 		this.r = r;
-
 	}
 	
-	public void onError(OnHttpError func) {
+	public FiddleHttpResponse onError(OnError func) {
 		if(isError()) {
 			func.analyse(r.getStatusLine());
 		}
+		return this;
 	}
 	
-	public void onRedirect(OnHttpRedirect func) {
+	public FiddleHttpResponse onRedirect(OnRedirect func) {
 		if(isRedirect()) {
 			final Redirect r = new Redirect(this.r.getStatusLine().getStatusCode());
 			final Header[] h = this.r.getHeaders("location");
@@ -74,31 +78,37 @@ public class FiddleHttpResponse {
 				func.toward(r);
 			}
 		}
+		return this;
 	}
 
-	public void onStream(OnHttpStream func) {
+	public void onSuccess(OnSuccess func) {
 		if (isOk()) {
-			final HttpEntity entity = r.getEntity();
-
-			if (entity != null) {
-				final Optional<Charset> charset = Optional
-						.fromNullable(ContentType.getOrDefault(entity)
-								.getCharset());
-
-				try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					entity.writeTo(baos);
-					func.read(Optional.of(baos.toString((charset
-							.or(Charset.defaultCharset())).name())));
-				} catch (IOException e) {
-					func.read(Optional.<String> absent());
-					throw new RuntimeException(e);
-				}
-			} else {
-				func.read(Optional.<String> absent());
-			}
+			func.onSuccess(this);
 		}
 	}
 
+	public String asText() {
+		if(!text.isPresent()) {
+			final HttpEntity entity = r.getEntity();
+			final Optional<Charset> charset = Optional
+					.fromNullable(ContentType.getOrDefault(entity)
+							.getCharset());
+
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				entity.writeTo(baos);
+				text = Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		return text.get();
+	}
+	
+	public SimpleXml asXml() {
+		return new SimpleXml(asText());
+	}
+	
 	public boolean isOk() {
 		return r.getStatusLine().getStatusCode() >= 200
 				&& r.getStatusLine().getStatusCode() < 300;

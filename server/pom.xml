@@ -3,22 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>foop.fiddlewith</groupId>
 	<artifactId>fiddlewith-server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 
+	<parent>
+		<groupId>foop.fiddlewith</groupId>
+		<artifactId>fiddlewith</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+	</parent>
+	
 	<dependencies>
-		<dependency>
-			<groupId>com.yammer.dropwizard</groupId>
-			<artifactId>dropwizard-testing</artifactId>
-			<version>${version.dropwizard}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.yammer.dropwizard</groupId>
-			<artifactId>dropwizard-core</artifactId>
-			<version>${version.dropwizard}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.yammer.dropwizard</groupId>
 			<artifactId>dropwizard-views</artifactId>
@@ -48,6 +41,11 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.26</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>fiddlewith-xml</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

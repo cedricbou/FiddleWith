@@ -2,12 +2,17 @@ package domain.http;
 
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import domain.TemplateId;
 import domain.WorkspaceId;
 import domain.template.FiddleTemplateRenderer;
 
 public class FiddleHttpRegistry {
 
+	private static final Logger LOG = LoggerFactory.getLogger(FiddleHttpRegistry.class);
+	
 	private final HttpRegistry http;
 	private final FiddleTemplateRenderer templateRenderer;
 	
@@ -30,6 +35,7 @@ public class FiddleHttpRegistry {
 	}
 	
 	protected FiddleHttpClient http(final String name) {
+		LOG.debug("get fiddle http client for {}", name);
 		return new FiddleHttpClient(templateRenderer, http.get(name).http);
 	}
 	
