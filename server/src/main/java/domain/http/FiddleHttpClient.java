@@ -17,9 +17,12 @@ import org.apache.http.entity.EntityTemplate;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
+import com.google.common.base.Optional;
+
 import domain.TemplateId;
 import domain.WorkspaceId;
 import domain.template.FiddleTemplateRenderer;
+import fiddle.utils.UriManipulator;
 
 public class FiddleHttpClient {
 
@@ -33,23 +36,24 @@ public class FiddleHttpClient {
 	}
 		
 	public FiddleHttpResponse post(final URI uri, final WorkspaceId workspaceId, final TemplateId templateId, final Object entity) throws IOException {
-		return post(uri, headerFromTemplate(workspaceId, templateId, entity), templates.render(entity, workspaceId, templateId, Locale.getDefault()));
+		return post(uri, Optional.<Map<String, String>>absent(), headerFromTemplate(workspaceId, templateId, entity), templates.render(entity, workspaceId, templateId, Locale.getDefault()));
 	}
 
 	public FiddleHttpResponse post(final URI uri, final WorkspaceId workspaceId, final TemplateId templateId) throws IOException {
-		return post(uri, headerFromTemplate(workspaceId, templateId, Collections.EMPTY_MAP), templates.render(Collections.EMPTY_MAP, workspaceId, templateId, Locale.getDefault()));
+		return post(uri, Optional.<Map<String, String>>absent(), headerFromTemplate(workspaceId, templateId, Collections.EMPTY_MAP), templates.render(Collections.EMPTY_MAP, workspaceId, templateId, Locale.getDefault()));
 	}
 
 	public FiddleHttpResponse get(final URI uri, final WorkspaceId workspaceId, final TemplateId templateId, final Object entity) throws IOException {
-		return get(uri, headerFromTemplate(workspaceId, templateId, entity));
+		return get(uri, Optional.<Map<String, String>>absent(), headerFromTemplate(workspaceId, templateId, entity));
 	}
 
 	public FiddleHttpResponse get(final URI uri, final WorkspaceId workspaceId, final TemplateId templateId) throws IOException {
-		return get(uri, headerFromTemplate(workspaceId, templateId, Collections.EMPTY_MAP));
+		return get(uri, Optional.<Map<String, String>>absent(), headerFromTemplate(workspaceId, templateId, Collections.EMPTY_MAP));
 	}
 
-	private FiddleHttpResponse get(final URI uri, final Map<String, String> headers) {
-		final HttpGet get = new HttpGet(uri);
+	private FiddleHttpResponse get(final URI uri, final Optional<Map<String, String>> queryString, final Map<String, String> headers) {
+		
+		final HttpGet get = new HttpGet(useQueryString(uri, queryString));
 		
 		for(final Entry<String, String> entry : headers.entrySet()) {
 			get.setHeader(entry.getKey(), entry.getValue());
@@ -63,10 +67,9 @@ public class FiddleHttpClient {
 			throw new RuntimeException(ioe);
 		}		
 	}
-	
-	
-	private FiddleHttpResponse post(final URI uri, final Map<String, String> headers, final String data) {
-		final HttpPost post = new HttpPost(uri);
+		
+	private FiddleHttpResponse post(final URI uri, final Optional<Map<String, String>> queryString, final Map<String, String> headers, final String data) {
+		final HttpPost post = new HttpPost(useQueryString(uri, queryString));
 		
 		for(final Entry<String, String> entry : headers.entrySet()) {
 			post.setHeader(entry.getKey(), entry.getValue());
@@ -87,6 +90,19 @@ public class FiddleHttpClient {
 		catch(IOException ioe) {
 			throw new RuntimeException(ioe);
 		}
+	}
+	
+	private static URI useQueryString(final URI uri, final Optional<Map<String, String>> queryString) {
+		final UriManipulator uriManipulator;
+		
+		if(queryString.isPresent()) {
+			uriManipulator = new UriManipulator(uri).enhanceQueryString(queryString.get());
+		}
+		else {
+			uriManipulator = new UriManipulator(uri);
+		}
+
+		return uriManipulator.uri;
 	}
 	
 	@SuppressWarnings("unchecked")

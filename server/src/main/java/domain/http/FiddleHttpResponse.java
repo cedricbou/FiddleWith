@@ -106,6 +106,7 @@ public class FiddleHttpResponse {
 	}
 	
 	public SimpleXml asXml() {
+		System.out.println(">>>>>> " + asText());
 		return new SimpleXml(asText());
 	}
 	

@@ -59,7 +59,8 @@ public class ElementNode implements MaybeNode {
 		}
 
 		if (el.isPresent() && el.get().hasNext()) {
-			first = Optional.of(el.get().next());
+			final OMElement ele = el.get().next();
+			first = Optional.of(ele);
 			return first;
 		} else {
 			return Optional.absent();
@@ -72,7 +73,22 @@ public class ElementNode implements MaybeNode {
 		}
 
 		if (el.isPresent()) {
-			all = Optional.of(Iterators.toArray(el.get(), OMElement.class));
+			final OMElement[] allEl = Iterators.toArray(el.get(),
+					OMElement.class);
+
+			// If first was already read, then we should take it into account
+			// when building the all array.
+			if (!first.isPresent()) {
+				if (allEl.length > 0) {
+					first = Optional.of(allEl[0]);
+				}
+				all = Optional.of(allEl);
+			} else {
+				final OMElement[] firstAndAllEl = new OMElement[allEl.length + 1];
+				firstAndAllEl[0] = first.get();
+				System.arraycopy(allEl, 0, firstAndAllEl, 1, allEl.length);
+			}
+
 			return all;
 		} else {
 			return Optional.absent();
@@ -167,7 +183,11 @@ public class ElementNode implements MaybeNode {
 						@Override
 						public String apply(OMElement input) {
 							if (input != null) {
-								return input.getText();
+								if (input.getFirstElement() != null) {
+									return input.toString();
+								} else {
+									return input.getText();
+								}
 							} else {
 								return "";
 							}

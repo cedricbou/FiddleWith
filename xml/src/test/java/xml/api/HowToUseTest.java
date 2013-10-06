@@ -17,6 +17,8 @@ public class HowToUseTest {
 	private final String FIXTURE_SIMPLE_XML;
 
 	private final String FIXTURE_DOCUMENT_SOAP_XML;
+	
+	private final String FIXTURE_SOAP_XML;
 
 	public HowToUseTest() throws IOException {
 		this.FIXTURE_SIMPLE_XML = new String(ByteStreams.toByteArray(this
@@ -24,9 +26,17 @@ public class HowToUseTest {
 		this.FIXTURE_DOCUMENT_SOAP_XML = new String(
 				ByteStreams.toByteArray(this.getClass().getResourceAsStream(
 						"FixtureSimpleDocumentSoap.xml")));
+		this.FIXTURE_SOAP_XML = new String(
+				ByteStreams.toByteArray(this.getClass().getResourceAsStream(
+						"FixtureSoapXml.xml")));
 
 	}
 
+	@Test public void readSoapXml() {
+		final SimpleXml xml = new SimpleXml(FIXTURE_SOAP_XML);
+		System.out.println(xml.get("soap:Body"));
+	}
+	
 	@Test
 	public void readSimpleXml() {
 		final SimpleXml xml = new SimpleXml(FIXTURE_SIMPLE_XML);

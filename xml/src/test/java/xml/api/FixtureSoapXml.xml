@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<ChangeAngleUnitResponse xmlns="http://www.webserviceX.NET/">
+			<ChangeAngleUnitResult>1.5707963267948966</ChangeAngleUnitResult>
+		</ChangeAngleUnitResponse>
+	</soap:Body>
+</soap:Envelope>

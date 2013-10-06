@@ -41,9 +41,9 @@ public class JRubyFiddle implements Fiddle {
 
 		// Assign the Java objects that you want to share
 		ruby.put("response", new FiddleResponse(mapper));
-		ruby.put("json", data);
-		ruby.put("sql", env.ruby.sql);
-		ruby.put("http", env.ruby.http(workspaceId));
+		ruby.put("_json", data);
+		ruby.put("_sql", env.ruby.sql);
+		ruby.put("_http", env.ruby.http(workspaceId));
 
 		// Execute a script (can be of any length, and taken from a file)
 
