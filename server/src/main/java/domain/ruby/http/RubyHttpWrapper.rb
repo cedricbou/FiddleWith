@@ -1,7 +1,10 @@
-module Guava
+module J
 	include Java
 	
 	Optional = com.google.common.base.Optional
+  URI = java.net.URI
+  
+  include_class "domain.TemplateId"
 end
 
 class HttpSugar
@@ -18,24 +21,24 @@ class HttpSugar
 	
 	def _options(options)
 		options = {
-			:queryString => Guava::Optional::absent,
-			:template => Guava::Optional::absent,
-			:entity => Guava::Optional::absent
-		}.merge(options){|key, oldval, newval| Guava::Optional::fromNullable newval}
+			:queryString => J::Optional::absent,
+			:template => J::Optional::absent,
+			:entity => J::Optional::absent
+		}.merge(options){|key, oldval, newval| if key == :template then J::Optional::fromNullable J::TemplateId.new(newval) else J::Optional::fromNullable newval end }
 	end
 	
 	def get(url, options = {})
 		options = _options(options)
 		
 		HttpResponseSugar.new(
-			@http.get(url, options[:queryString], options[:template], options[:entity]))
+			@http.get(J::URI.new(url), options[:queryString], @registry.workspace_id, options[:template], options[:entity]))
 	end
 	
 	def post(url, options = {})
 		options = _options(options)
 		
 		HttpResponseSugar.new(
-			@http.post(url, options[:queryString], options[:template], options[:entity]))
+			@http.post(J::URI.new(url), options[:queryString], @registry.workspace_id, options[:template], options[:entity]))
 	end
 	
 	def method_missing(method_name, *args)
@@ -50,9 +53,9 @@ class ConfiguredHttpSugar
  
   def _options(options)
     options = {
-      :queryString => Guava::Optional::absent,
-      :entity => Guava::Optional::absent
-    }.merge(options){|key, oldval, newval| Guava::Optional::fromNullable newval}
+      :queryString => J::Optional::absent,
+      :entity => J::Optional::absent
+    }.merge(options){|key, oldval, newval| J::Optional::fromNullable newval}
   end
 
   def post(options = {})
