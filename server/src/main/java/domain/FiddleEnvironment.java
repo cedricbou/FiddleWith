@@ -27,7 +27,7 @@ public class FiddleEnvironment {
 		this.templates = new FiddleMustacheRenderer(fiddleRepository);
 		this.http = new FiddleHttpRegistry(http, templates);
 		this.defaultHttp = new FiddleHttpClient(templates, defaultHttp);
-		this.ruby = new RubyEnv(sql, this.defaultHttp, this.http);
+		this.ruby = new RubyEnv(sql);
 	}
 
 }

@@ -12,6 +12,6 @@ class SqlSugar
 end
 
 sql = SqlSugar.new(_sql)
-http = HttpSugar.new(_http)
+http = HttpSugar.new(_http_registry, _http)
 data = JsonSugar.new(_json)
 

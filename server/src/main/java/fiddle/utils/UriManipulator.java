@@ -24,7 +24,7 @@ public class UriManipulator {
 		this.uri = uri;
 	}
 	
-	public UriManipulator enhanceQueryString(final Map<String, String> values) {
+	public UriManipulator enhanceQueryString(final Map<String, Object> values) {
 		try {
 			if(uri.getQuery() != null) {
 				return new UriManipulator(new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), uri.getQuery() + "&" + buildQueryStringParameters(values), uri.getFragment()));
@@ -38,11 +38,11 @@ public class UriManipulator {
 		}
 	}
 	
-	private String buildQueryStringParameters(final Map<String, String> values) {
-		final Iterator<String> params = Iterators.transform(values.entrySet().iterator(), new Function<Entry<String, String>, String>() {
+	private String buildQueryStringParameters(final Map<String, Object> values) {
+		final Iterator<String> params = Iterators.transform(values.entrySet().iterator(), new Function<Entry<String, Object>, String>() {
 			@Override
-			public String apply(final Entry<String, String> input) {
-				return input.getKey() + "=" + urlEncode(input.getValue());
+			public String apply(final Entry<String, Object> input) {
+				return input.getKey() + "=" + urlEncode(input.getValue().toString());
 			}
 		});
 		

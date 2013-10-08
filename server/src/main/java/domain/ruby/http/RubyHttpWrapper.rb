@@ -1,15 +1,45 @@
+module Guava
+	include Java
+	
+	Optional = com.google.common.base.Optional
+end
 
 class HttpSugar
-	def initialize(http)
+	def initialize(registry, http)
+		@registry = registry
 		@http = http
 	end
 	
+	def http(key)
+		configured = @registry.configured key
+		raise "no http configuration found for #{key}" if configured.nil?
+		ConfiguredHttpSugar.new(configured)
+	end
+	
+	def _options(options)
+		options = {
+			:queryString => Guava::Optional::absent,
+			:template => Guava::Optional::absent,
+			:entity => Guava::Optional::absent
+		}.merge(options){|key, oldval, newval| Guava::Optional::fromNullable newval}
+	end
+	
+	def get(url, options = {})
+		options = _options(options)
+		
+		HttpResponseSugar.new(
+			@http.get(url, options[:queryString], options[:template], options[:entity]))
+	end
+	
+	def post(url, options = {})
+		options = _options(options)
+		
+		HttpResponseSugar.new(
+			@http.post(url, options[:queryString], options[:template], options[:entity]))
+	end
+	
 	def method_missing(method_name, *args)
-    if method_name.to_s == "post" || method_name.to_s == "get" then
-      HttpResponseSugar.new(@http.send(method_name, *args))
-    else
-      ConfiguredHttpSugar.new(@http.http(method_name.to_s))
-   	end
+		http(method_name.to_s)
 	end
 end
 
@@ -17,13 +47,28 @@ class ConfiguredHttpSugar
   def initialize(http)
     @http = http
   end
-  
-  def method_missing(method_name, *args)
-    if method_name.to_s == "post" || method_name.to_s == "get" then
-      HttpResponseSugar.new(@http.send(method_name, *args))
-    else 
-      @http.send(method_name, *args)
-    end
+ 
+  def _options(options)
+    options = {
+      :queryString => Guava::Optional::absent,
+      :entity => Guava::Optional::absent
+    }.merge(options){|key, oldval, newval| Guava::Optional::fromNullable newval}
+  end
+
+  def post(options = {})
+    options = _options(options)
+    
+    puts options[:entity]
+    
+    HttpResponseSugar.new(
+      @http.post(options[:queryString], options[:entity]))
+  end
+
+  def get(options = {})
+    options = _options(options)
+    
+    HttpResponseSugar.new(
+      @http.get(options[:queryString], options[:entity]))
   end
 end
 

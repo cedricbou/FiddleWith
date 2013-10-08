@@ -43,7 +43,8 @@ public class JRubyFiddle implements Fiddle {
 		ruby.put("response", new FiddleResponse(mapper));
 		ruby.put("_json", data);
 		ruby.put("_sql", env.ruby.sql);
-		ruby.put("_http", env.ruby.http(workspaceId));
+		ruby.put("_http_registry", env.http.scoped(workspaceId));
+		ruby.put("_http", env.defaultHttp);
 
 		// Execute a script (can be of any length, and taken from a file)
 

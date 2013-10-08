@@ -37,7 +37,7 @@ class JsonSugar
     if method_name.to_s =~ /^to_\w+/ then
       to_s.send(method_name, *args, &block)
     else
-      JsonSugar.new(@obj.send("get", method_name, &block))
+      JsonSugar.new(@obj.send("get", method_name.to_s, &block))
     end
   end
   
@@ -54,11 +54,11 @@ class JsonSugar
       end
     elsif @obj.array?
       a = []
-      @obj.iterator.each { |node| a.push DynaBeanWrapper.new(node).to_hash }
+      @obj.iterator.each { |node| a.push JsonSugar.new(node).to_hash }
       a
     else
       h = {}
-      @obj.field_names.each { |field| h[field] = DynaBeanWrapper.new(@obj.get(field)).to_hash }
+      @obj.field_names.each { |field| h[field] = JsonSugar.new(@obj.get(field)).to_hash }
       h
     end
   end
