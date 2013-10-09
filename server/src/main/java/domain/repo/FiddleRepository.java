@@ -5,7 +5,7 @@ import java.io.File;
 import com.google.common.base.Optional;
 
 import domain.FiddleEnvironment;
-import domain.WorkspaceId;
+import fiddle.api.WorkspaceId;
 
 public class FiddleRepository {
 

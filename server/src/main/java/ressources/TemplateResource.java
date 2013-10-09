@@ -15,8 +15,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import domain.FiddleEnvironment;
-import domain.TemplateId;
-import domain.WorkspaceId;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 
 @Path("/fiddle/with/template")
 public class TemplateResource {

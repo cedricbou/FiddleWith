@@ -6,12 +6,13 @@ import java.io.IOException;
 import com.google.common.base.Optional;
 import com.google.common.io.Files;
 
-import domain.Fiddle;
+import domain.ExecutableFiddle;
 import domain.FiddleEnvironment;
-import domain.FiddleId;
-import domain.WorkspaceId;
 import domain.ruby.JRubyFiddle;
 import domain.ruby.RubyScript;
+import fiddle.api.FiddleId;
+import fiddle.api.Language;
+import fiddle.api.WorkspaceId;
 
 public class FiddleWorkspace {
 	private final FiddleEnvironment env;
@@ -27,7 +28,7 @@ public class FiddleWorkspace {
 	}
 
 	
-	public Optional<? extends Fiddle> find(final FiddleId id) {
+	public Optional<? extends ExecutableFiddle> find(final FiddleId id) {
 		final Optional<File> scriptFile = findFile(id);
 
 		if (scriptFile.isPresent()) {
@@ -45,7 +46,7 @@ public class FiddleWorkspace {
 		return Optional.absent();
 	}
 
-	public Fiddle replace(final FiddleId id, final Fiddle fiddle)
+	public ExecutableFiddle replace(final FiddleId id, final ExecutableFiddle fiddle)
 			throws IOException {
 		final File to = buildFile(id, fiddle.getLanguage());
 		Files.write(fiddle.getScript().getBytes(), to);

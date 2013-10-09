@@ -19,9 +19,9 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import com.google.common.base.Optional;
 
-import domain.TemplateId;
-import domain.WorkspaceId;
 import domain.template.FiddleTemplateRenderer;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 import fiddle.utils.UriManipulator;
 
 /**

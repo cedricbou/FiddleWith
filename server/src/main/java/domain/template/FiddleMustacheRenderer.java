@@ -18,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import domain.TemplateId;
-import domain.WorkspaceId;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 
 public class FiddleMustacheRenderer implements FiddleTemplateRenderer {
 

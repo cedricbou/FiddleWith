@@ -3,8 +3,8 @@ package domain.template;
 import java.io.IOException;
 import java.util.Locale;
 
-import domain.TemplateId;
-import domain.WorkspaceId;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 
 public interface FiddleTemplateRenderer {
 

@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 
-import domain.TemplateId;
-import domain.WorkspaceId;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 
 public class ScopedFiddleHttpClient {
 

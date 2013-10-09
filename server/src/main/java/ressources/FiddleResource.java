@@ -28,12 +28,12 @@ import com.google.common.base.Optional;
 import com.yammer.dropwizard.auth.Auth;
 import com.yammer.metrics.annotation.Timed;
 
-import domain.Fiddle;
+import domain.ExecutableFiddle;
 import domain.FiddleEnvironment;
-import domain.FiddleId;
 import domain.User;
-import domain.WorkspaceId;
 import domain.repo.FiddleWorkspace;
+import fiddle.api.FiddleId;
+import fiddle.api.WorkspaceId;
 
 @Path("/fiddle/with/{workspaceId}/{scriptId}")
 public class FiddleResource {
@@ -74,9 +74,9 @@ public class FiddleResource {
 			@PathParam("scriptId") @Valid final FiddleId scriptId) {
 
 		final Optional<Response> r = findFiddle(workspaceId, scriptId)
-				.transform(new Function<Fiddle, Response>() {
+				.transform(new Function<ExecutableFiddle, Response>() {
 					@Override
-					public Response apply(final Fiddle fiddle) {
+					public Response apply(final ExecutableFiddle fiddle) {
 						return Response.ok(new ScriptView(scriptId, fiddle))
 								.build();
 					}
@@ -94,11 +94,11 @@ public class FiddleResource {
 			final String content) throws IOException {
 
 		final Optional<Response> r = findFiddle(workspaceId, scriptId)
-				.transform(new Function<Fiddle, Response>() {
+				.transform(new Function<ExecutableFiddle, Response>() {
 					@Override
-					public Response apply(final Fiddle fiddle) {
+					public Response apply(final ExecutableFiddle fiddle) {
 						try {
-							Optional<? extends Fiddle> modifiedFiddle = replaceFiddle(
+							Optional<? extends ExecutableFiddle> modifiedFiddle = replaceFiddle(
 									workspaceId, scriptId,
 									fiddle.withScript(content));
 							if (modifiedFiddle.isPresent()) {
@@ -120,7 +120,7 @@ public class FiddleResource {
 	}
 
 
-	private Optional<? extends Fiddle> findFiddle(final WorkspaceId wId,
+	private Optional<? extends ExecutableFiddle> findFiddle(final WorkspaceId wId,
 			final FiddleId fId) {
 		final Optional<FiddleWorkspace> wk = env.repository.find(wId);
 		if (wk.isPresent()) {
@@ -129,8 +129,8 @@ public class FiddleResource {
 		return Optional.absent();
 	}
 
-	private Optional<? extends Fiddle> replaceFiddle(WorkspaceId wId,
-			final FiddleId fId, Fiddle fiddle) throws IOException {
+	private Optional<? extends ExecutableFiddle> replaceFiddle(WorkspaceId wId,
+			final FiddleId fId, ExecutableFiddle fiddle) throws IOException {
 
 		final Optional<FiddleWorkspace> wk = env.repository.find(wId);
 
@@ -149,9 +149,9 @@ public class FiddleResource {
 		final JsonNode json = mapper.readTree(jsonParams);
 
 		final Optional<Response> r = findFiddle(workspaceId,
-				fiddleId).transform(new Function<Fiddle, Response>() {
+				fiddleId).transform(new Function<ExecutableFiddle, Response>() {
 			@Override
-			public Response apply(Fiddle fiddle) {
+			public Response apply(ExecutableFiddle fiddle) {
 				return executeFiddle(fiddle, json);
 			}
 		});
@@ -159,7 +159,7 @@ public class FiddleResource {
 		return r.or(Response.status(404).entity("no found fiddle in " + workspaceId + " script " + fiddleId).build());
 	}
 
-	private Response executeFiddle(final Fiddle fiddle, final JsonNode json) {
+	private Response executeFiddle(final ExecutableFiddle fiddle, final JsonNode json) {
 		try {
 			return fiddle.execute(json);
 		} catch (EvalFailedException e) {

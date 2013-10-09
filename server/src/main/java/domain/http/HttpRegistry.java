@@ -5,9 +5,9 @@ import java.net.URI;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import domain.FiddleRegistry;
-import domain.TemplateId;
 import domain.http.HttpRegistry.ConfiguredHttpClient;
 import domain.template.FiddleTemplateRenderer;
+import fiddle.api.TemplateId;
 
 public class HttpRegistry extends FiddleRegistry<ConfiguredHttpClient> {
 

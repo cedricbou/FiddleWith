@@ -1,4 +1,4 @@
-package domain;
+package fiddle.api;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;

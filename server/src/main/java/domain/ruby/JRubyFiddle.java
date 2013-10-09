@@ -8,14 +8,14 @@ import org.jruby.embed.ScriptingContainer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import domain.Fiddle;
+import domain.ExecutableFiddle;
 import domain.FiddleEnvironment;
 import domain.FiddleResponse;
-import domain.WorkspaceId;
 import domain.json.serializer.RubyJacksonModule;
-import domain.repo.Language;
+import fiddle.api.Language;
+import fiddle.api.WorkspaceId;
 
-public class JRubyFiddle implements Fiddle {
+public class JRubyFiddle implements ExecutableFiddle {
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 	
@@ -72,7 +72,7 @@ public class JRubyFiddle implements Fiddle {
 	}
 	
 	@Override
-	public Fiddle withScript(String content) {
+	public ExecutableFiddle withScript(String content) {
 		return new JRubyFiddle(workspaceId, env, new RubyScript(content));
 	}
 }

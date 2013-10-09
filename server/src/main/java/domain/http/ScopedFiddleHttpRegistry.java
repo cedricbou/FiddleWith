@@ -1,6 +1,6 @@
 package domain.http;
 
-import domain.WorkspaceId;
+import fiddle.api.WorkspaceId;
 
 public class ScopedFiddleHttpRegistry {
 

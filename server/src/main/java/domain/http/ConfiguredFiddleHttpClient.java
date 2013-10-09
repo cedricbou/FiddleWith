@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 
-import domain.TemplateId;
+import fiddle.api.TemplateId;
 
 public class ConfiguredFiddleHttpClient {
 

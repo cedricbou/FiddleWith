@@ -4,9 +4,9 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import domain.repo.Language;
+import fiddle.api.Language;
 
-public interface Fiddle {
+public interface ExecutableFiddle {
 
 	public Response execute(final JsonNode data);
 	
@@ -14,5 +14,5 @@ public interface Fiddle {
 	
 	public Language getLanguage();
 	
-	public Fiddle withScript(final String content);
+	public ExecutableFiddle withScript(final String content);
 }

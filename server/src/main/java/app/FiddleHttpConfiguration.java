@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.client.HttpClientConfiguration;
 
-import domain.TemplateId;
+import fiddle.api.TemplateId;
 
 public class FiddleHttpConfiguration {
 

@@ -5,9 +5,9 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import domain.TemplateId;
-import domain.WorkspaceId;
 import domain.template.FiddleTemplateRenderer;
+import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 
 public class FiddleHttpRegistry {
 
