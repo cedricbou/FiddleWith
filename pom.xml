@@ -17,6 +17,7 @@
 		<module>basket</module>
 		<module>repository</module>
 		<module>api</module>
+		<module>ruby-fiddle</module>
 	</modules>
 
 	<properties>
