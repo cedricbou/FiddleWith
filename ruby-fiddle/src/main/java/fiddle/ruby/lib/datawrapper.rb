@@ -40,7 +40,9 @@ class JsonSugar
       o = @obj.send("get", method_name.to_s, &block)
       r =  JsonSugar.new(o)
       
-      if o.value_node?
+      if o.nil? then
+        o
+      elsif o.value_node? or o.array? then
         r.to_hash
       else
         r
