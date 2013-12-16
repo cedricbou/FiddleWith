@@ -26,6 +26,8 @@ public class FiddleResponseBuilder {
 		
 		if(normalized.isLong()) {
 			return Response.ok(normalized.asLong()).build();
+		} else if(normalized.isTextual()) {
+			return Response.ok(normalized.asText()).build();
 		}
 		
 		return Response.ok(normalized).build();

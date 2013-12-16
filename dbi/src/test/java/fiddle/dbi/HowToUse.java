@@ -16,12 +16,14 @@ import org.junit.Test;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.exceptions.NoResultsException;
 
+import fiddle.dbi.registry.SimpleDbiRegistry;
+
 public class HowToUse {
 
 	private final static JdbcConnectionPool pool = JdbcConnectionPool.create(
 			"jdbc:h2:mem:test2", "username", "password");
 
-	private final static DbiRegistry registry = new DbiRegistry();
+	private final static SimpleDbiRegistry registry = new SimpleDbiRegistry();
 
 	@BeforeClass
 	public static void initDb() {
