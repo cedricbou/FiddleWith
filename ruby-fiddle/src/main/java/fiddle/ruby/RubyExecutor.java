@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.FiddleResponseBuilder;
+import fiddle.config.Resources;
 import fiddle.ruby.json.serializer.RubyJacksonModule;
 
 public class RubyExecutor {
@@ -30,9 +31,10 @@ public class RubyExecutor {
 			mapper);
 
 	private final static String includer = 
-		"require 'prefiddle.rb'" + "\n" 
-			+ "r = __r" + "\n"
-			+ "d = JsonSugar.new(__d)" + "\n";
+		"require 'prefiddle.rb'; " 
+				+ "r = __r; "
+				+ "d = JsonSugar.new(__d);" 
+				+ "dbi = DbiSugar.new(__rsc);"+ "\n";
 		
 	
 	private void initRuby() {
@@ -48,13 +50,18 @@ public class RubyExecutor {
 		
 		ruby.setLoadPaths(newPaths);
 	}
-	
+
 	public Response execute(final FiddleId id, final Fiddle fiddle, final JsonNode data) {
+		return this.execute(Resources.EMPTY, id, fiddle, data);
+	}
+	
+	public Response execute(final Resources resources, final FiddleId id, final Fiddle fiddle, final JsonNode data) {
 		initRuby();
 		
 		ruby.clear();
 		ruby.put("__r", responseBuilder);
 		ruby.put("__d", data);
+		ruby.put("__rsc", resources);
 		
 		LOG.debug("will execute ruby script for fiddle {} with data {}", id,
 				data);

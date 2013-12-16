@@ -1,3 +1,2 @@
 require 'datawrapper.rb'
-
-puts "loading prefiddle..."
+require 'dbiwrapper.rb'

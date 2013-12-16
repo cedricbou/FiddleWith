@@ -16,12 +16,14 @@ import org.junit.Test;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.exceptions.NoResultsException;
 
+import fiddle.dbi.registry.SimpleDbiRegistry;
+
 public class HowToUse {
 
 	private final static JdbcConnectionPool pool = JdbcConnectionPool.create(
 			"jdbc:h2:mem:test2", "username", "password");
 
-	private final static DbiRegistry registry = new DbiRegistry();
+	private final static SimpleDbiRegistry registry = new SimpleDbiRegistry();
 
 	@BeforeClass
 	public static void initDb() {
@@ -55,32 +57,6 @@ public class HowToUse {
 		assertEquals(2, r.size());
 		assertEquals("Doe", r.get(0).get("name"));
 		assertEquals("Dupont", r.get(1).get("name"));	
-	}
-
-	@Test
-	public void testConstrainedSelect() {
-		final DecoratedDbi db = registry.getDecoratedDbi("test");
-
-		try {
-			db.number("select id from person where name = ?", "Nobody");
-			fail("no id for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
-
-		try {
-			db.text("select name from person where name = ?", "Nobody");
-			fail("no name for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
-
-		try {
-			db.first("select * from person where name = ?", "Nobody");
-			fail("no data for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
 	}
 
 	@Test
@@ -175,5 +151,31 @@ public class HowToUse {
 			assertTrue(true);
 		}
 
+	}
+
+	@Test
+	public void testConstrainedSelect() {
+		final DecoratedDbi db = registry.getDecoratedDbi("test");
+	
+		try {
+			db.number("select id from person where name = ?", "Nobody");
+			fail("no id for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
+	
+		try {
+			db.text("select name from person where name = ?", "Nobody");
+			fail("no name for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
+	
+		try {
+			db.first("select * from person where name = ?", "Nobody");
+			fail("no data for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
 	}
 }

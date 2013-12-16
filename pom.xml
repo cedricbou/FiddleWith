@@ -18,7 +18,9 @@
 		<module>repository</module>
 		<module>api</module>
 		<module>dbi</module>
+		<module>config</module>
 		<module>ruby-fiddle</module>
+		<module>app</module>
 	</modules>
 
 	<properties>

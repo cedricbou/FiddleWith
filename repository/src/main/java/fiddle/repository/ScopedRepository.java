@@ -11,4 +11,5 @@ public interface ScopedRepository<Ident, Entity> {
 	public void clearCacheFor(final Ident id);
 	
 	public void write(final Ident ident, final Entity entity) throws IOException;
+
 }
