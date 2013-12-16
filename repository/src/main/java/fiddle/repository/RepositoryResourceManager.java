@@ -35,7 +35,7 @@ public class RepositoryResourceManager {
 				resources.put(workspaceId, new Resources(global, factory,
 						configurationFactory.build(scopedResources)));
 			} catch (Exception e) {
-				LOG.error("failed to load workspace resource configuration");
+				LOG.error("failed to load workspace resource configuration", e);
 				return Resources.EMPTY;
 			}
 		}

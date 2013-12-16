@@ -5,15 +5,23 @@ import javax.validation.Valid;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
 
-import fiddle.config.Resources;
+import fiddle.config.ResourceConfiguration;
 
 public class AppConfiguration extends Configuration {
 
 	@JsonProperty
 	@Valid
-	private final Resources resources = Resources.EMPTY;
+	private String repository;
 	
-	public Resources getGlobalResources() {
+	@JsonProperty
+	@Valid
+	private ResourceConfiguration resources;
+	
+	public ResourceConfiguration getGlobalResourceConfiguration() {
 		return resources;
+	}
+	
+	public String getRepository() {
+		return repository;
 	}
 }

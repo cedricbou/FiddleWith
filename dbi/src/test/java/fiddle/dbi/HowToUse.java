@@ -60,32 +60,6 @@ public class HowToUse {
 	}
 
 	@Test
-	public void testConstrainedSelect() {
-		final DecoratedDbi db = registry.getDecoratedDbi("test");
-
-		try {
-			db.number("select id from person where name = ?", "Nobody");
-			fail("no id for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
-
-		try {
-			db.text("select name from person where name = ?", "Nobody");
-			fail("no name for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
-
-		try {
-			db.first("select * from person where name = ?", "Nobody");
-			fail("no data for M. Nobody, it should have failed on this request");
-		} catch (NoResultsException e) {
-			assertTrue(true);
-		}
-	}
-
-	@Test
 	public void testSimpleInsert() {
 		final DecoratedDbi db = registry.getDecoratedDbi("test");
 
@@ -177,5 +151,31 @@ public class HowToUse {
 			assertTrue(true);
 		}
 
+	}
+
+	@Test
+	public void testConstrainedSelect() {
+		final DecoratedDbi db = registry.getDecoratedDbi("test");
+	
+		try {
+			db.number("select id from person where name = ?", "Nobody");
+			fail("no id for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
+	
+		try {
+			db.text("select name from person where name = ?", "Nobody");
+			fail("no name for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
+	
+		try {
+			db.first("select * from person where name = ?", "Nobody");
+			fail("no data for M. Nobody, it should have failed on this request");
+		} catch (NoResultsException e) {
+			assertTrue(true);
+		}
 	}
 }
