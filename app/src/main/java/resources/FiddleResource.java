@@ -1,13 +1,12 @@
 package resources;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -15,9 +14,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import org.jruby.embed.EvalFailedException;
-import org.jruby.exceptions.RaiseException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -104,6 +100,67 @@ public class FiddleResource {
 		return "cleared";
 	}
 	
+	@GET
+	@Path("/edit")
+	@Produces(MediaType.TEXT_HTML)
+	public Response editFiddle(
+			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
+			@PathParam("fiddleId") @Valid final FiddleId fiddleId) {
+
+		// Let's work with a clean copy of the fiddle.
+		clearCache(workspaceId, fiddleId);
+		
+		final Optional<Fiddle> fiddle = repository.fiddles(workspaceId).open(fiddleId);
+		
+		
+		final Optional<Response> r = fiddle
+				.transform(new Function<Fiddle, Response>() {
+					@Override
+					public Response apply(final Fiddle fiddle) {
+						return Response.ok(new ScriptView(workspaceId, fiddleId, fiddle))
+								.build();
+					}
+				});
+
+		return r.or(Response.status(404).build());
+	}
+	
+	@PUT
+	@Path("/save")
+	@Produces(MediaType.TEXT_HTML)
+	public Response saveFiddle(
+			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
+			@PathParam("fiddleId") @Valid final FiddleId fiddleId,
+			final String content) throws IOException {
+
+		final Optional<Response> r = repository.fiddles(workspaceId).open(fiddleId)
+				.transform(new Function<Fiddle, Response>() {
+					@Override
+					public Response apply(final Fiddle fiddle) {
+						try {
+							repository.fiddles(workspaceId).write(fiddleId, new Fiddle(content, fiddle.language));
+							repository.fiddles(workspaceId).clearCacheFor(fiddleId);
+							final Optional<Fiddle> modifiedFiddle = repository.fiddles(workspaceId).open(fiddleId);
+							
+							if (modifiedFiddle.isPresent()) {
+								return Response.ok(
+										new ScriptView(workspaceId, fiddleId, modifiedFiddle
+												.get())).build();
+							}
+							
+							return Response.status(500)
+									.entity("tried to modify absent fiddle!")
+									.build();
+						} catch (IOException ioe) {
+							return Response.status(500)
+									.entity("failed to write fiddle!").build();
+						}
+					}
+				});
+
+		return r.or(Response.status(404).build());
+	}
+	
 	private Optional<Fiddle> findFiddle(final WorkspaceId wId,
 			final FiddleId fId) {
 		return repository.fiddles(wId).open(fId);
@@ -120,8 +177,9 @@ public class FiddleResource {
 				.transform(new Function<Fiddle, Response>() {
 					@Override
 					public Response apply(Fiddle fiddle) {
-						return executeFiddle(workspaceId, fiddleId, fiddle,
-								json);
+						return executor.execute(
+								repository.resources(resources, dbiFactory, workspaceId), fiddleId,
+								fiddle, json);
 					}
 				});
 
@@ -131,24 +189,4 @@ public class FiddleResource {
 						+ fiddleId).build());
 	}
 
-	private Response executeFiddle(final WorkspaceId wId, final FiddleId id,
-			final Fiddle fiddle, final JsonNode json) {
-		try {
-			return executor.execute(
-					repository.resources(resources, dbiFactory, wId), id,
-					fiddle, json);
-		} catch (EvalFailedException e) {
-			if (e.getCause() != null && e.getCause() instanceof RaiseException) {
-				final StringWriter w = new StringWriter();
-				e.getCause().printStackTrace(new PrintWriter(w));
-				return Response.status(500).entity(w.toString()).build();
-			} else {
-				e.printStackTrace();
-				return Response.status(500).entity(e.getMessage()).build();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(500).entity(e.getMessage()).build();
-		}
-	}
 }

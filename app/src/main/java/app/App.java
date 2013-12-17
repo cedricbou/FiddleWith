@@ -7,10 +7,12 @@ import org.skife.jdbi.v2.DBI;
 import resources.FiddleResource;
 
 import com.yammer.dropwizard.Service;
+import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.db.DatabaseConfiguration;
 import com.yammer.dropwizard.jdbi.DBIFactory;
+import com.yammer.dropwizard.views.ViewBundle;
 
 import fiddle.config.FiddleDBIFactory;
 import fiddle.config.Resources;
@@ -26,6 +28,8 @@ public class App extends Service<AppConfiguration> {
 	public void initialize(Bootstrap<AppConfiguration> bootstrap) {
 		bootstrap.setName("fiddlewith.it");
 		bootstrap.addCommand(new FiddleCommand(this));
+		bootstrap.addBundle(new AssetsBundle("/assets/", "/assets/"));
+		bootstrap.addBundle(new ViewBundle());
 	}
 	
 	@Override
