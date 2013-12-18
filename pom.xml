@@ -67,13 +67,13 @@
 			<id>central</id>
 			<url>http://repo1.maven.org/maven2</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-
+<!--
 		<repository>
 			<id>emodroid-cloudbees-snapshot</id>
 			<name>emodroid-cloudbees-snapshot</name>
@@ -85,6 +85,7 @@
 			<name>emodroid-cloudbees-release</name>
 			<url>https://repository-emodroid.forge.cloudbees.com/release/</url>
 		</repository>
+-->
 	</repositories>
 
 	<dependencies>
