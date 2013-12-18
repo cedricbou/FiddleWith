@@ -8,6 +8,7 @@ import resources.FiddleResource;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
+import com.yammer.dropwizard.auth.basic.BasicAuthProvider;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.db.DatabaseConfiguration;
@@ -16,6 +17,7 @@ import com.yammer.dropwizard.views.ViewBundle;
 
 import fiddle.config.FiddleDBIFactory;
 import fiddle.config.Resources;
+import fiddle.password.PasswordManager;
 import fiddle.repository.Repository;
 
 public class App extends Service<AppConfiguration> {
@@ -28,13 +30,17 @@ public class App extends Service<AppConfiguration> {
 	public void initialize(Bootstrap<AppConfiguration> bootstrap) {
 		bootstrap.setName("fiddlewith.it");
 		bootstrap.addCommand(new FiddleCommand(this));
+		bootstrap.addCommand(new PasswordCommand());
 		bootstrap.addBundle(new AssetsBundle("/assets/", "/assets/"));
 		bootstrap.addBundle(new ViewBundle());
 	}
 	
 	@Override
 	public void run(final AppConfiguration config, final Environment env) throws Exception {
+		final PasswordManager passwords = config.getUsers();
 
+		env.addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(new AppAuthenticator(passwords), "fiddle with!"));
+		
 		final Repository repository = new Repository(new File(config.getRepository()));
 
 		final DBIFactory dbiFactory = new DBIFactory();
