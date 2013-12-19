@@ -21,6 +21,7 @@
 		<module>config</module>
 		<module>ruby-fiddle</module>
 		<module>app</module>
+		<module>password</module>
 	</modules>
 
 	<properties>

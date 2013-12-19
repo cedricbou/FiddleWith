@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.yammer.dropwizard.auth.Auth;
 import com.yammer.metrics.annotation.Timed;
 import com.yammer.metrics.core.TimerContext;
 
@@ -28,6 +29,7 @@ import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
 import fiddle.config.FiddleDBIFactory;
 import fiddle.config.Resources;
+import fiddle.password.PasswordManager.UserConfiguration;
 import fiddle.repository.Repository;
 import fiddle.ruby.RubyExecutor;
 
@@ -104,9 +106,12 @@ public class FiddleResource {
 	@Path("/edit")
 	@Produces(MediaType.TEXT_HTML)
 	public Response editFiddle(
+			@Auth final UserConfiguration user,
 			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
-			@PathParam("fiddleId") @Valid final FiddleId fiddleId) {
+			@PathParam("fiddleId") @Valid final FiddleId fiddleId) throws IllegalAccessException {
 
+		user.assertTag("fiddler");
+		
 		// Let's work with a clean copy of the fiddle.
 		clearCache(workspaceId, fiddleId);
 		
@@ -129,10 +134,13 @@ public class FiddleResource {
 	@Path("/save")
 	@Produces(MediaType.TEXT_HTML)
 	public Response saveFiddle(
+			@Auth final UserConfiguration user,
 			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId,
-			final String content) throws IOException {
+			final String content) throws IOException, IllegalAccessException {
 
+		user.assertTag("fiddler");
+		
 		final Optional<Response> r = repository.fiddles(workspaceId).open(fiddleId)
 				.transform(new Function<Fiddle, Response>() {
 					@Override
