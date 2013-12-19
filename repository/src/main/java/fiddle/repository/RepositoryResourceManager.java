@@ -28,19 +28,25 @@ public class RepositoryResourceManager {
 
 		if (!resources.containsKey(workspaceId)) {
 
-			final ConfigurationFactory<ResourceConfiguration> configurationFactory = ConfigurationFactory
-					.forClass(ResourceConfiguration.class, new Validator());
+			if (scopedResources.exists() && scopedResources.canRead()) {
 
-			try {
-				resources.put(workspaceId, new Resources(global, factory,
-						configurationFactory.build(scopedResources)));
-			} catch (Exception e) {
-				LOG.error("failed to load workspace resource configuration", e);
-				return Resources.EMPTY;
+				final ConfigurationFactory<ResourceConfiguration> configurationFactory = ConfigurationFactory
+						.forClass(ResourceConfiguration.class, new Validator());
+
+				try {
+					resources.put(workspaceId, new Resources(global, factory,
+							configurationFactory.build(scopedResources)));
+				} catch (Exception e) {
+					LOG.error(
+							"failed to load workspace resource configuration, fallback to global resources",
+							e);
+					resources.put(workspaceId, global);
+				}
+			} else {
+				LOG.info("no workspace resources configuration, or not readable, fallback to global resources");
+				resources.put(workspaceId, global);
 			}
 		}
 		return resources.get(workspaceId);
-
 	}
-
 }

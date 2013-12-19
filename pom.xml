@@ -22,6 +22,7 @@
 		<module>ruby-fiddle</module>
 		<module>app</module>
 		<module>password</module>
+		<module>httpclient</module>
 	</modules>
 
 	<properties>
