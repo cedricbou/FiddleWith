@@ -15,6 +15,17 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
+	
+	<build>
+	<resources>
+        <resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.rb</include>
+            </includes>
+        </resource>
+    </resources>
+	</build>
 
 	<dependencies>
 		<dependency>
