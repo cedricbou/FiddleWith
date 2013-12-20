@@ -4,14 +4,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
 
 import wiremock.org.mortbay.log.Log;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 public class FiddleHttpResponse {
 
@@ -19,8 +26,12 @@ public class FiddleHttpResponse {
 	private final byte[] body;
 	private final Optional<Charset> charset;
 
+	private final HttpResponse response;
+
 	protected FiddleHttpResponse(final HttpResponse response) {
 		this.status = response.getStatusLine().getStatusCode();
+
+		this.response = response;
 
 		final HttpEntity entity = response.getEntity();
 
@@ -51,7 +62,50 @@ public class FiddleHttpResponse {
 		}
 	}
 
+	public Header[] headers() {
+		return response.getAllHeaders();
+	}
+
+	public List<String> headerValues(final String type) {
+		return Lists.transform(Arrays.asList(response.getHeaders(type)),
+				new Function<Header, String>() {
+
+					@Override
+					public String apply(@Nullable Header header) {
+						return header.getValue();
+					}
+				});
+	}
+
+	public Optional<String> firstHeader(final String type) {
+		return Optional.fromNullable(response.getFirstHeader(type)).transform(
+				new Function<Header, String>() {
+					
+					@Override
+					public String apply(@Nullable Header header) {
+						return header.getValue();
+					}
+				});
+	}
+
 	public boolean is2XX() {
 		return status >= 200 && status < 300;
+	}
+
+	public boolean is3XX() {
+		return status >= 300 && status < 400;
+	}
+
+	public boolean is4XX() {
+		return status >= 400 && status < 500;
+	}
+
+	public boolean is5XX() {
+		return status >= 500 && status < 600;
+	}
+
+	@Override
+	public String toString() {
+		return status + " [" + body() + "]";
 	}
 }
