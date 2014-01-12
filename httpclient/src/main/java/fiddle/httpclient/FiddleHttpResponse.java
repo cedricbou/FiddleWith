@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 public class FiddleHttpResponse {
 
 	private final int status;
+	private final String statusReason;
 	private final byte[] body;
 	private final Optional<Charset> charset;
 
@@ -30,6 +31,7 @@ public class FiddleHttpResponse {
 
 	protected FiddleHttpResponse(final HttpResponse response) {
 		this.status = response.getStatusLine().getStatusCode();
+		this.statusReason = response.getStatusLine().getReasonPhrase();
 
 		this.response = response;
 
@@ -38,13 +40,17 @@ public class FiddleHttpResponse {
 		this.charset = Optional.fromNullable(ContentType.getOrDefault(entity)
 				.getCharset());
 
-		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			entity.writeTo(baos);
-			body = baos.toByteArray();
-			// text =
-			// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (this.is2XX()) {
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				entity.writeTo(baos);
+				body = baos.toByteArray();
+				// text =
+				// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			body = new byte[] {};
 		}
 
 	}
@@ -80,7 +86,7 @@ public class FiddleHttpResponse {
 	public Optional<String> firstHeader(final String type) {
 		return Optional.fromNullable(response.getFirstHeader(type)).transform(
 				new Function<Header, String>() {
-					
+
 					@Override
 					public String apply(@Nullable Header header) {
 						return header.getValue();
@@ -102,6 +108,14 @@ public class FiddleHttpResponse {
 
 	public boolean is5XX() {
 		return status >= 500 && status < 600;
+	}
+	
+	public int status() {
+		return status;
+	}
+	
+	public String statusReason() {
+		return statusReason;
 	}
 
 	@Override

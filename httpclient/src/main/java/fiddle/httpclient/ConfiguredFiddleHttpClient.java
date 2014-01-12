@@ -13,6 +13,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentProducer;
 import org.apache.http.entity.EntityTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -23,6 +25,8 @@ public class ConfiguredFiddleHttpClient {
 	private final String url;
 
 	private final Optional<Map<String, String>> headers;
+	
+	private final Logger LOG = LoggerFactory.getLogger(ConfiguredFiddleHttpClient.class);
 
 	public ConfiguredFiddleHttpClient(final HttpClient client, final String url) {
 		this(client, url, Optional.<Map<String, String>> absent());
@@ -73,7 +77,8 @@ public class ConfiguredFiddleHttpClient {
 			final HttpResponse response = client.execute(get);
 			return new FiddleHttpResponse(response);
 		} catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+			LOG.warn("Failed during get request", ioe);
+			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(ioe, null));
 		}
 	}
 
@@ -98,7 +103,8 @@ public class ConfiguredFiddleHttpClient {
 			final HttpResponse response = client.execute(post);
 			return new FiddleHttpResponse(response);
 		} catch (IOException ioe) {
-			throw new RuntimeException(ioe);
+			LOG.warn("Failed during post request", ioe);
+			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(ioe, null));
 		}
 	}
 	

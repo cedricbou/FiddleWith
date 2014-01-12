@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.github.mustachejava.Mustache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -29,13 +30,13 @@ public class Repository {
 	// private final static Logger LOG =
 	// LoggerFactory.getLogger(Repository.class);
 
-	private final LoadingCache<WorkspaceId, ScopedRepository<FiddleId, Fiddle>> fiddlesCache = CacheBuilder
+	private final LoadingCache<WorkspaceId, ScopedRepository<FiddleId, Fiddle, Fiddle>> fiddlesCache = CacheBuilder
 			.newBuilder()
 			.maximumSize(50)
 			.expireAfterWrite(2, TimeUnit.HOURS)
-			.build(new CacheLoader<WorkspaceId, ScopedRepository<FiddleId, Fiddle>>() {
+			.build(new CacheLoader<WorkspaceId, ScopedRepository<FiddleId, Fiddle, Fiddle>>() {
 				@Override
-				public ScopedRepository<FiddleId, Fiddle> load(
+				public ScopedRepository<FiddleId, Fiddle, Fiddle> load(
 						WorkspaceId workspaceId) {
 					return scoped(
 							new FiddleFileEntityManager(dir, workspaceId),
@@ -43,25 +44,25 @@ public class Repository {
 							scoped(new FiddleFileEntityManager(dir,
 									WorkspaceId.COMMON),
 									WorkspaceId.COMMON,
-									new AbsentScopedRepository<FiddleId, Fiddle>()));
+									new AbsentScopedRepository<FiddleId, Fiddle, Fiddle>()));
 				}
 			});
 
-	private final LoadingCache<WorkspaceId, ScopedRepository<TemplateId, String>> templatesCache = CacheBuilder
+	private final LoadingCache<WorkspaceId, ScopedRepository<TemplateId, Mustache, String>> templatesCache = CacheBuilder
 			.newBuilder()
 			.maximumSize(50)
 			.expireAfterWrite(2, TimeUnit.HOURS)
-			.build(new CacheLoader<WorkspaceId, ScopedRepository<TemplateId, String>>() {
+			.build(new CacheLoader<WorkspaceId, ScopedRepository<TemplateId, Mustache, String>>() {
 				@Override
-				public ScopedRepository<TemplateId, String> load(
+				public ScopedRepository<TemplateId, Mustache, String> load(
 						WorkspaceId workspaceId) {
 					return scoped(
-							new TemplateFileEntityManager(dir, workspaceId),
+							new TemplateFileEntityManager(dir, workspaceId, WorkspaceId.COMMON),
 							workspaceId,
 							scoped(new TemplateFileEntityManager(dir,
-									WorkspaceId.COMMON),
+									WorkspaceId.COMMON, null),
 									WorkspaceId.COMMON,
-									new AbsentScopedRepository<TemplateId, String>()));
+									new AbsentScopedRepository<TemplateId, Mustache, String>()));
 				}
 			});
 
@@ -76,7 +77,7 @@ public class Repository {
 				factory, workspaceId);
 	}
 
-	public ScopedRepository<FiddleId, Fiddle> fiddles(
+	public ScopedRepository<FiddleId, Fiddle, Fiddle> fiddles(
 			final WorkspaceId workspaceId) {
 		try {
 			return fiddlesCache.get(workspaceId);
@@ -86,7 +87,7 @@ public class Repository {
 		}
 	}
 
-	public ScopedRepository<TemplateId, String> templates(
+	public ScopedRepository<TemplateId, Mustache, String> templates(
 			final WorkspaceId workspaceId) {
 		try {
 			return templatesCache.get(workspaceId);
@@ -97,16 +98,16 @@ public class Repository {
 
 	}
 
-	private <I, E> ScopedRepository<I, E> scoped(
-			final FileEntityManager<I, E> fileManager,
-			final WorkspaceId workspaceId, ScopedRepository<I, E> fallback) {
+	private <I, RE, WE> ScopedRepository<I, RE, WE> scoped(
+			final FileEntityManager<I, RE, WE> fileManager,
+			final WorkspaceId workspaceId, ScopedRepository<I, RE, WE> fallback) {
 
 		final File scoped = new File(dir, workspaceId.id);
 
 		if (scoped.exists() && scoped.isDirectory() && scoped.canRead()) {
-			return new PresentScopedRepository<I, E>(fallback, fileManager);
+			return new PresentScopedRepository<I, RE, WE>(fallback, fileManager);
 		} else {
-			return new AbsentScopedRepository<I, E>();
+			return new AbsentScopedRepository<I, RE, WE>();
 		}
 	}
 }

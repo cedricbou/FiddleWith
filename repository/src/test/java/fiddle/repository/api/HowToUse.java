@@ -6,11 +6,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 
 import org.junit.Test;
 
+import com.github.mustachejava.Mustache;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
@@ -55,20 +58,28 @@ public class HowToUse {
 
 	@Test
 	public void findATemplateInCommonWorkspace() {
-		final Optional<String> content = repo.templates(
+		final Optional<Mustache> content = repo.templates(
 				new WorkspaceId("workspace1")).open(new TemplateId("template2"));
 
 		assertTrue(content.isPresent());
-		assertEquals("the template in common.", content.get());
+		
+		final StringWriter writer = new StringWriter();
+		content.get().execute(writer, ImmutableMap.of());
+		
+		assertEquals("the template in common.", writer.getBuffer().toString());
 	}
 
 	@Test
 	public void findATemplateExistingInWorkspace() {
-		final Optional<String> content = repo.templates(
+		final Optional<Mustache> content = repo.templates(
 				new WorkspaceId("workspace1")).open(new TemplateId("template1"));
 
 		assertTrue(content.isPresent());
-		assertEquals("a template in workspace 1.", content.get());
+		
+		final StringWriter writer = new StringWriter();
+		content.get().execute(writer, ImmutableMap.of());
+		
+		assertEquals("a template in workspace 1.", writer.getBuffer().toString());
 	}
 
 	
@@ -118,7 +129,7 @@ public class HowToUse {
 
 		assertFalse(f.exists());
 
-		final Optional<String> preres = repo.templates(
+		final Optional<Mustache> preres = repo.templates(
 				new WorkspaceId("workspace2")).open(new TemplateId("titi"));
 
 		assertFalse(preres.isPresent());
@@ -126,12 +137,16 @@ public class HowToUse {
 		repo.templates(new WorkspaceId("workspace2")).write(new TemplateId("titi"),
 				"titi is in the template.");
 
-		final Optional<String> res = repo
+		final Optional<Mustache> res = repo
 				.templates(new WorkspaceId("workspace2")).open(
 						new TemplateId("titi"));
 
 		assertTrue(res.isPresent());
-		assertEquals("titi is in the template.", res.get());
+		
+		final StringWriter writer = new StringWriter();
+		res.get().execute(writer, ImmutableMap.of());
+		
+		assertEquals("titi is in the template.", writer.getBuffer().toString());
 	}
 
 	@Test
@@ -139,7 +154,7 @@ public class HowToUse {
 		final File f = new File(ws2, "toto.rb");
 		f.delete();
 
-		final ScopedRepository<FiddleId, Fiddle> repo = this.repo
+		final ScopedRepository<FiddleId, Fiddle, Fiddle> repo = this.repo
 				.fiddles(new WorkspaceId("workspace2"));
 
 		assertFalse(f.exists());

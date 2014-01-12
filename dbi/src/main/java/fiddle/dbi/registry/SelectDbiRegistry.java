@@ -4,11 +4,10 @@ import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fiddle.api.registry.BaseRegistry;
 import fiddle.api.registry.SelectRegistry;
 import fiddle.dbi.DecoratedDbi;
 
-public class SelectDbiRegistry extends BaseRegistry<DBI> implements DbiRegistry {
+public class SelectDbiRegistry implements DbiRegistry {
 
 	private final SelectRegistry<DbiRegistry> select;
 	

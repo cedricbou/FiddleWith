@@ -6,10 +6,10 @@ import com.google.common.base.Optional;
 
 import fiddle.repository.ScopedRepository;
 
-public class AbsentScopedRepository<Ident, Entity> implements ScopedRepository<Ident, Entity> {
+public class AbsentScopedRepository<Ident, ReadEntity, WriteEntity> implements ScopedRepository<Ident, ReadEntity, WriteEntity> {
 	
 	@Override
-	public Optional<Entity> open(Ident ident) {
+	public Optional<ReadEntity> open(Ident ident) {
 		return Optional.absent();
 	}
 	
@@ -18,6 +18,6 @@ public class AbsentScopedRepository<Ident, Entity> implements ScopedRepository<I
 	}
 	
 	@Override
-	public void write(Ident id, Entity entity) throws IOException {
+	public void write(Ident id, WriteEntity entity) throws IOException {
 	}
 }

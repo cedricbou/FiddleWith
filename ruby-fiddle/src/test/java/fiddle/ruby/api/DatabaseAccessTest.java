@@ -4,8 +4,8 @@ import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatterBuilder;
 import org.junit.Test;
 import org.skife.jdbi.v2.DBI;
 

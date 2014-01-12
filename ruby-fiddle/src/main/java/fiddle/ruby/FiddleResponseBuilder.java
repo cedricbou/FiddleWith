@@ -1,4 +1,4 @@
-package fiddle.api;
+package fiddle.ruby;
 
 import javax.ws.rs.core.Response;
 
@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fiddle.httpclient.FiddleHttpResponse;
 
 
 public class FiddleResponseBuilder {
@@ -31,6 +33,15 @@ public class FiddleResponseBuilder {
 		}
 		
 		return Response.ok(normalized).build();
+	}
+	
+	public Response auto(final FiddleHttpResponse r) {
+		if(r.is2XX()) {
+			return Response.ok(r.body()).build();
+		}
+		else {
+			return Response.status(r.status()).entity(r.statusReason()).build();
+		}
 	}
 	
 	public Response _404() {

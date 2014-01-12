@@ -16,7 +16,7 @@ import fiddle.api.FiddleId;
 import fiddle.api.Language;
 import fiddle.api.WorkspaceId;
 
-public class FiddleFileEntityManager implements FileEntityManager<FiddleId, Fiddle>{
+public class FiddleFileEntityManager implements FileEntityManager<FiddleId, Fiddle, Fiddle>{
 	
 	private static final Logger LOG = LoggerFactory
 			.getLogger(FiddleFileEntityManager.class);
