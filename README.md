@@ -1,6 +1,8 @@
 FiddleWith.It!
 ======
 
+[![Build Status](https://travis-ci.org/cedricbou/FiddleWith.png?branch=master)](https://travis-ci.org/cedricbou/FiddleWith)
+
 Build prototypes or experiment quick features, in a few minutes, even from a tablet
 or during meetings.
 
