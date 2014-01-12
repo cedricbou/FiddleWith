@@ -13,8 +13,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.ContentType;
-
-import wiremock.org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -22,6 +22,8 @@ import com.google.common.collect.Lists;
 
 public class FiddleHttpResponse {
 
+	private final Logger LOG = LoggerFactory.getLogger(FiddleHttpResponse.class);
+	
 	private final int status;
 	private final String statusReason;
 	private final byte[] body;
@@ -60,7 +62,7 @@ public class FiddleHttpResponse {
 			return new String(body,
 					(charset.or(Charset.defaultCharset())).name());
 		} catch (UnsupportedEncodingException ee) {
-			Log.warn(
+			LOG.warn(
 					"failed to create String from found charset ("
 							+ charset.toString()
 							+ "), will return default encoded string", ee);
