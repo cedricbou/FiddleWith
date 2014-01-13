@@ -53,6 +53,17 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.2.2</version>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.16</version>
+				<configuration>
+					<includes>
+						<include>%regex[.*[Test|HowToUse].class]</include>
+					</includes>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<extensions>
@@ -75,19 +86,10 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-<!--
-		<repository>
-			<id>emodroid-cloudbees-snapshot</id>
-			<name>emodroid-cloudbees-snapshot</name>
-			<url>https://repository-emodroid.forge.cloudbees.com/snapshot/</url>
-		</repository>
-
-		<repository>
-			<id>emodroid-cloudbees-release</id>
-			<name>emodroid-cloudbees-release</name>
-			<url>https://repository-emodroid.forge.cloudbees.com/release/</url>
-		</repository>
--->
+		<!-- <repository> <id>emodroid-cloudbees-snapshot</id> <name>emodroid-cloudbees-snapshot</name> 
+			<url>https://repository-emodroid.forge.cloudbees.com/snapshot/</url> </repository> 
+			<repository> <id>emodroid-cloudbees-release</id> <name>emodroid-cloudbees-release</name> 
+			<url>https://repository-emodroid.forge.cloudbees.com/release/</url> </repository> -->
 	</repositories>
 
 	<dependencies>
