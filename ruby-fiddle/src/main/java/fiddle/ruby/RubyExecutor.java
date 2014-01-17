@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
-import fiddle.config.Resources;
+import fiddle.resources.Resources;
 import fiddle.ruby.json.serializer.RubyJacksonModule;
 
 public class RubyExecutor {

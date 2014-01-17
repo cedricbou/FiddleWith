@@ -24,19 +24,22 @@ public class ConfiguredFiddleHttpClient {
 	private final HttpClient client;
 	private final String url;
 
+	private final BodyBuilder body;
+	
 	private final Optional<Map<String, String>> headers;
 	
 	private final Logger LOG = LoggerFactory.getLogger(ConfiguredFiddleHttpClient.class);
 
-	public ConfiguredFiddleHttpClient(final HttpClient client, final String url) {
-		this(client, url, Optional.<Map<String, String>> absent());
+	protected ConfiguredFiddleHttpClient(final HttpClient client, final String url) {
+		this(client, url, Optional.<Map<String, String>> absent(), BodyBuilder.EMPTY);
 	}
 
-	public ConfiguredFiddleHttpClient(final HttpClient client,
-			final String url, Optional<Map<String, String>> headers) {
+	protected ConfiguredFiddleHttpClient(final HttpClient client,
+			final String url, Optional<Map<String, String>> headers, final BodyBuilder body) {
 		this.client = client;
 		this.url = url;
 		this.headers = headers;
+		this.body = body;
 	}
 
 	public ConfiguredFiddleHttpClient withHeader(final String type,
@@ -45,7 +48,7 @@ public class ConfiguredFiddleHttpClient {
 				this.headers.or(Maps.<String, String> newHashMap()));
 		headers.put(type, value);
 
-		return new ConfiguredFiddleHttpClient(client, url, Optional.of(headers));
+		return new ConfiguredFiddleHttpClient(client, url, Optional.of(headers), body);
 	}
 
 	public ConfiguredFiddleHttpClient withHeaders(
@@ -56,7 +59,15 @@ public class ConfiguredFiddleHttpClient {
 		newHeaders.putAll(headers);
 		
 		return new ConfiguredFiddleHttpClient(client, url,
-				Optional.fromNullable(newHeaders));
+				Optional.fromNullable(newHeaders), body);
+	}
+	
+	public ConfiguredFiddleHttpClient withBody(final String body) {
+		return new ConfiguredFiddleHttpClient(client, url, headers, new BodyBuilder.SimpleBodyBuilder(body));
+	}
+	
+	public ConfiguredFiddleHttpClient withBody(final BodyBuilder body) {
+		return new ConfiguredFiddleHttpClient(client, url, headers, body);
 	}
 
 	private void fillInHeadersIfPresent(final HttpRequestBase request) {
@@ -106,6 +117,10 @@ public class ConfiguredFiddleHttpClient {
 			LOG.warn("Failed during post request", ioe);
 			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(ioe, null));
 		}
+	}
+	
+	public FiddleHttpResponse post(final Object values) {
+		return post(body.build(values));
 	}
 	
 }

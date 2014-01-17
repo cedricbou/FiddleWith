@@ -125,6 +125,29 @@ public class HowToUse {
 	}
 
 	@Test
+	public void httpsPostWithBody() {
+		final String html = "<html><body><p>Hello World!</p></body></html>";
+
+		stubFor(post(urlEqualTo("/postjson"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/html")
+								.withBody(html)));
+
+		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
+				.withUrl("https://localhost:8043/postjson").withBody(new BodyBuilder.SimpleBodyBuilder("Greetings {{name}}"));
+		
+		final FiddleHttpResponse response = client.post(ImmutableMap.of("name", "John"));
+
+		assertTrue(response.is2XX());
+		assertEquals(html, response.body());
+
+		verify(postRequestedFor(urlMatching("/postjson")).withRequestBody(
+				equalTo("Greetings John")));
+	}
+
+	
+	@Test
 	public void getWithHeaders() {
 		final String html = "<html><body><p>Hello World!</p></body></html>";
 

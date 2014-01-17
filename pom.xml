@@ -16,9 +16,11 @@
 		<module>xml</module>
 		<module>basket</module>
 		<module>repository</module>
+		<module>repository-impl</module>
 		<module>api</module>
 		<module>dbi</module>
 		<module>config</module>
+		<module>resources</module>
 		<module>ruby-fiddle</module>
 		<module>app</module>
 		<module>password</module>

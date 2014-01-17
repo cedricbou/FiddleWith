@@ -35,15 +35,14 @@ import com.yammer.dropwizard.client.HttpClientConfiguration;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.config.Resources;
 import fiddle.httpclient.FiddleHttpClient;
-import fiddle.httpclient.registry.HttpRegistry;
-import fiddle.repository.Repository;
+import fiddle.repository.impl.RepositoryManager;
+import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 
 public class HttpClientTest {
 
-	private final Repository repo;
+	private final RepositoryManager repo;
 
 	private final static WorkspaceId WS = new WorkspaceId("http");
 
@@ -52,8 +51,6 @@ public class HttpClientTest {
 	private final static RubyExecutor ex = new RubyExecutor();
 
 	private final Resources resources = mock(Resources.class);
-
-	private final HttpRegistry https = mock(HttpRegistry.class);
 
 	@Rule
 	public WireMockRule wireMockRule = new WireMockRule(8089, 8043);
@@ -64,11 +61,11 @@ public class HttpClientTest {
 		File repoDir = new File(new File(url.getFile()).getParentFile(),
 				"repository");
 
-		when(resources.defaultHttp()).thenReturn(
+		when(resources.http()).thenReturn(
 				new FiddleHttpClient(new HttpClientBuilder().using(
 						new HttpClientConfiguration()).build()));
 
-		repo = new Repository(repoDir);
+		repo = new RepositoryManager(repoDir, null);
 	}
 
 	@Test

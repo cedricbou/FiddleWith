@@ -21,11 +21,11 @@ import fiddle.api.Language;
 import fiddle.api.TemplateId;
 import fiddle.api.WorkspaceId;
 import fiddle.repository.Repository;
-import fiddle.repository.ScopedRepository;
+import fiddle.repository.impl.RepositoryManager;
 
 public class HowToUse {
 
-	private final Repository repo;
+	private final RepositoryManager repo;
 
 	private final File ws2;
 
@@ -34,7 +34,7 @@ public class HowToUse {
 		File repoDir = new File(new File(url.getFile()).getParentFile(),
 				"repository");
 		ws2 = new File(repoDir, "workspace2");
-		repo = new Repository(repoDir);
+		repo = new RepositoryManager(repoDir, null);
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class HowToUse {
 		final Optional<Fiddle> content = repo.fiddles(
 				new WorkspaceId("workspace99")).open(new FiddleId("script99"));
 
-		assertTrue(!content.isPresent());
+		assertTrue(content.isPresent());
 	}
 
 	@Test
@@ -154,7 +154,7 @@ public class HowToUse {
 		final File f = new File(ws2, "toto.rb");
 		f.delete();
 
-		final ScopedRepository<FiddleId, Fiddle, Fiddle> repo = this.repo
+		final Repository<Fiddle, Fiddle, FiddleId> repo = this.repo
 				.fiddles(new WorkspaceId("workspace2"));
 
 		assertFalse(f.exists());

@@ -27,28 +27,24 @@ import com.yammer.metrics.core.TimerContext;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.config.FiddleDBIFactory;
-import fiddle.config.Resources;
+import fiddle.config.ResourceFileName;
 import fiddle.password.PasswordManager.UserConfiguration;
-import fiddle.repository.Repository;
+import fiddle.repository.CacheableRepository;
+import fiddle.repository.impl.RepositoryManager;
+import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 
 @Path("/fiddle/with/{workspaceId}/{fiddleId}")
 public class FiddleResource {
 
 	private final FiddleMetrics metrics = new FiddleMetrics();
-	
-	private final Resources resources;
-	private final RubyExecutor executor;
-	private final Repository repository;
-	private final FiddleDBIFactory dbiFactory;
 
-	public FiddleResource(final Resources resources,
-			final Repository repository, final FiddleDBIFactory dbiFactory) {
-		this.resources = resources;
+	private final RubyExecutor executor;
+	private final RepositoryManager repository;
+
+	public FiddleResource(final RepositoryManager repository) {
 		this.executor = new RubyExecutor();
 		this.repository = repository;
-		this.dbiFactory = dbiFactory;
 	}
 
 	@Timed
@@ -60,7 +56,8 @@ public class FiddleResource {
 			@Valid @PathParam("fiddleId") final FiddleId fiddleId,
 			final String body) throws JsonProcessingException, IOException {
 
-		final TimerContext context = metrics.timer(workspaceId, fiddleId).time();
+		final TimerContext context = metrics.timer(workspaceId, fiddleId)
+				.time();
 
 		try {
 			return doFiddle(workspaceId, fiddleId, body);
@@ -76,8 +73,9 @@ public class FiddleResource {
 			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId,
 			@Context UriInfo uri) throws JsonProcessingException, IOException {
-		
-		final TimerContext context = metrics.timer(workspaceId, fiddleId).time();
+
+		final TimerContext context = metrics.timer(workspaceId, fiddleId)
+				.time();
 
 		try {
 			return doFiddle(workspaceId, fiddleId,
@@ -89,73 +87,84 @@ public class FiddleResource {
 
 	@POST
 	@Path("/clear")
-	public String clearCachePOST(@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
+	public String clearCachePOST(
+			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId) {
 		return clearCache(workspaceId, fiddleId);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/clear")
-	public String clearCache(@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
+	public String clearCache(
+			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId) {
-		repository.fiddles(workspaceId).clearCacheFor(fiddleId);
-		return "cleared";
+
+		if (repository.fiddles(workspaceId) instanceof CacheableRepository) {
+			((CacheableRepository<FiddleId>) repository.fiddles(workspaceId))
+					.clearCacheFor(fiddleId);
+			return "cleared";
+		} else {
+			return "not cleared, no cacheable repository";
+		}
+
 	}
-	
+
 	@GET
 	@Path("/edit")
 	@Produces(MediaType.TEXT_HTML)
-	public Response editFiddle(
-			@Auth final UserConfiguration user,
+	public Response editFiddle(@Auth final UserConfiguration user,
 			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
-			@PathParam("fiddleId") @Valid final FiddleId fiddleId) throws IllegalAccessException {
+			@PathParam("fiddleId") @Valid final FiddleId fiddleId)
+			throws IllegalAccessException {
 
 		user.assertTag("fiddler");
-		
+
 		// Let's work with a clean copy of the fiddle.
 		clearCache(workspaceId, fiddleId);
-		
-		final Optional<Fiddle> fiddle = repository.fiddles(workspaceId).open(fiddleId);
-		
-		
+
+		final Optional<Fiddle> fiddle = repository.fiddles(workspaceId).open(
+				fiddleId);
+
 		final Optional<Response> r = fiddle
 				.transform(new Function<Fiddle, Response>() {
 					@Override
 					public Response apply(final Fiddle fiddle) {
-						return Response.ok(new ScriptView(workspaceId, fiddleId, fiddle))
+						return Response.ok(
+								new ScriptView(workspaceId, fiddleId, fiddle))
 								.build();
 					}
 				});
 
 		return r.or(Response.status(404).build());
 	}
-	
+
 	@PUT
 	@Path("/save")
 	@Produces(MediaType.TEXT_HTML)
-	public Response saveFiddle(
-			@Auth final UserConfiguration user,
+	public Response saveFiddle(@Auth final UserConfiguration user,
 			@PathParam("workspaceId") @Valid final WorkspaceId workspaceId,
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId,
 			final String content) throws IOException, IllegalAccessException {
 
 		user.assertTag("fiddler");
-		
-		final Optional<Response> r = repository.fiddles(workspaceId).open(fiddleId)
-				.transform(new Function<Fiddle, Response>() {
+
+		final Optional<Response> r = repository.fiddles(workspaceId)
+				.open(fiddleId).transform(new Function<Fiddle, Response>() {
 					@Override
 					public Response apply(final Fiddle fiddle) {
 						try {
-							repository.fiddles(workspaceId).write(fiddleId, new Fiddle(content, fiddle.language));
-							repository.fiddles(workspaceId).clearCacheFor(fiddleId);
-							final Optional<Fiddle> modifiedFiddle = repository.fiddles(workspaceId).open(fiddleId);
-							
+							repository.fiddles(workspaceId).write(fiddleId,
+									new Fiddle(content, fiddle.language));
+							final Optional<Fiddle> modifiedFiddle = repository
+									.fiddles(workspaceId).open(fiddleId);
+
 							if (modifiedFiddle.isPresent()) {
 								return Response.ok(
-										new ScriptView(workspaceId, fiddleId, modifiedFiddle
-												.get())).build();
+										new ScriptView(workspaceId, fiddleId,
+												modifiedFiddle.get())).build();
 							}
-							
+
 							return Response.status(500)
 									.entity("tried to modify absent fiddle!")
 									.build();
@@ -168,7 +177,7 @@ public class FiddleResource {
 
 		return r.or(Response.status(404).build());
 	}
-	
+
 	private Optional<Fiddle> findFiddle(final WorkspaceId wId,
 			final FiddleId fId) {
 		return repository.fiddles(wId).open(fId);
@@ -186,8 +195,10 @@ public class FiddleResource {
 					@Override
 					public Response apply(Fiddle fiddle) {
 						return executor.execute(
-								repository.resources(resources, dbiFactory, workspaceId), fiddleId,
-								fiddle, json);
+								repository.resources(workspaceId)
+										.open(ResourceFileName.VALUE)
+										.or(Resources.EMPTY), fiddleId, fiddle,
+								json);
 					}
 				});
 

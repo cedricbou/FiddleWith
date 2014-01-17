@@ -1,9 +1,9 @@
 class DbiSugar
   def initialize(rsc)
-    @registry = rsc.dbis;
+    @rsc = rsc;
   end
   
   def method_missing(method_name, *args)
-    @registry.get_decorated_dbi(method_name)
+    @rsc.dbi(method_name)
   end
 end

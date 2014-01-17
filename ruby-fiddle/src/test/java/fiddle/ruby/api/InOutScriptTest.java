@@ -22,12 +22,12 @@ import com.google.common.base.Optional;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.repository.Repository;
+import fiddle.repository.impl.RepositoryManager;
 import fiddle.ruby.RubyExecutor;
 
 public class InOutScriptTest {
 
-	private final Repository repo;
+	private final RepositoryManager repo;
 
 	private final static WorkspaceId WS_SIMPLE = new WorkspaceId("inout");
 
@@ -41,7 +41,7 @@ public class InOutScriptTest {
 		File repoDir = new File(new File(url.getFile()).getParentFile(),
 				"repository");
 
-		repo = new Repository(repoDir);
+		repo = new RepositoryManager(repoDir, null);
 	}
 
 	@Test

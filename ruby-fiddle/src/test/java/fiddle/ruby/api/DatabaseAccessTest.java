@@ -27,15 +27,14 @@ import com.google.common.base.Optional;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.config.Resources;
 import fiddle.dbi.DecoratedDbi;
-import fiddle.dbi.registry.DbiRegistry;
-import fiddle.repository.Repository;
+import fiddle.repository.impl.RepositoryManager;
+import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 
 public class DatabaseAccessTest {
 
-	private final Repository repo;
+	private final RepositoryManager repo;
 
 	private final static WorkspaceId WS = new WorkspaceId("db");
 
@@ -44,8 +43,6 @@ public class DatabaseAccessTest {
 	private final static RubyExecutor ex = new RubyExecutor();
 
 	private final Resources resources = mock(Resources.class);
-
-	private final DbiRegistry dbis = mock(DbiRegistry.class);
 
 	private final DBI dbi = new DBI(JdbcConnectionPool.create(
 			"jdbc:h2:mem:test2", "username", "password"));
@@ -56,12 +53,9 @@ public class DatabaseAccessTest {
 		File repoDir = new File(new File(url.getFile()).getParentFile(),
 				"repository");
 
-		when(dbis.contains("foo")).thenReturn(true);
-		when(dbis.get("foo")).thenReturn(dbi);
-		when(dbis.getDecoratedDbi("foo")).thenReturn(new DecoratedDbi(dbi));
-		when(resources.dbis()).thenReturn(dbis);
+		when(resources.dbi("foo")).thenReturn(new DecoratedDbi(dbi));
 
-		repo = new Repository(repoDir);
+		repo = new RepositoryManager(repoDir, null);
 	}
 
 	@Test

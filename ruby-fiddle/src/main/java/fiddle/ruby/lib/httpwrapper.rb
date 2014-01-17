@@ -1,8 +1,8 @@
 class HttpSugar
   
   def initialize(rsc)
-    @registry = rsc.https
-    @http = rsc.default_http
+    @rsc = rsc
+    @http = rsc.http
   end
   
   def get(url)

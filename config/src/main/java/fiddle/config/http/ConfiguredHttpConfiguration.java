@@ -22,7 +22,7 @@ public class ConfiguredHttpConfiguration {
 	@JsonProperty
 	@Valid
 	@NotNull
-	private String data = "";
+	private String body = "";
 	
 	@JsonProperty
 	@Valid
@@ -35,6 +35,10 @@ public class ConfiguredHttpConfiguration {
 	
 	public String url() {
 		return url;
+	}
+	
+	public String body() {
+		return body;
 	}
 	
 }
