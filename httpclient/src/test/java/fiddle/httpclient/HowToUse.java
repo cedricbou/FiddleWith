@@ -17,6 +17,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.google.common.collect.ImmutableMap;
@@ -25,6 +26,7 @@ import com.yammer.dropwizard.client.HttpClientConfiguration;
 
 import fiddle.httpclient.FiddleHttpClient.Redirect;
 import fiddle.httpclient.FiddleHttpClient.SSL;
+import fiddle.xml.SimpleXml;
 
 public class HowToUse {
 
@@ -277,4 +279,57 @@ public class HowToUse {
 
 		verify(getRequestedFor(urlMatching("/oldpage")));
 	}
+	
+	@Test
+	public void getAsJson() {
+		final String json = "{ \"foo\" : \"Hey\", \"bar\" : \"Joe\" }";
+
+		stubFor(get(urlEqualTo("/somejson"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/json")
+								.withBody(json)));
+
+		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
+				.withUrl("https://localhost:8043/somejson");
+
+		final FiddleHttpResponse response = client.get();
+
+		assertTrue(response.is2XX());
+		assertEquals(json, response.body());
+
+		final JsonNode node = response.json();
+		
+		assertEquals("Hey", node.get("foo").asText());
+		assertEquals("Joe", node.get("bar").asText());
+		
+		verify(getRequestedFor(urlMatching("/somejson")));
+	}
+	
+	@Test
+	public void getAsXml() {
+		final String xml = "<root><level1><level2><foo>Hey</foo><bar>Joe</bar></level2></level1></root>";
+
+		stubFor(get(urlEqualTo("/somexml"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/xml")
+								.withBody(xml)));
+
+		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
+				.withUrl("https://localhost:8043/somexml");
+
+		final FiddleHttpResponse response = client.get();
+
+		assertTrue(response.is2XX());
+		assertEquals(xml, response.body());
+
+		final SimpleXml node = response.xml();
+		
+		assertEquals("Hey", node.get("level1").get("level2").get("foo").value());
+		assertEquals("Joe", node.get("level1").get("level2").get("bar").value());
+		
+		verify(getRequestedFor(urlMatching("/somexml")));
+	}
+
 }

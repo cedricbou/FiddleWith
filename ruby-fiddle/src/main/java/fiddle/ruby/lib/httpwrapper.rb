@@ -1,3 +1,15 @@
+include Java
+java_import Java::fiddle.httpclient.FiddleHttpResponse
+
+JFiddleHttpResponse = FiddleHttpResponse
+
+class JFiddleHttpResponse
+  alias old_json json
+  def json
+    JsonSugar.new(old_json)
+  end
+end
+
 class HttpSugar
   
   def initialize(rsc)
@@ -30,10 +42,10 @@ class HttpSugar
       configured = configured.with_headers options[:headers]
     end
     
-    configured.post(data)
+   configured.post(data)
   end
     
   def method_missing(method_name, *args)
-    @registry.get_http(method_name)
+    @rsc.http(method_name.to_s)
   end
 end

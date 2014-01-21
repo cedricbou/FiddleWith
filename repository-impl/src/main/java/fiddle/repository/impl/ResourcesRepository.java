@@ -60,7 +60,7 @@ public class ResourcesRepository implements
 						new WorkspaceResources(commonTemplates, config, env)));
 			} catch (Exception e) {
 				LOG.error("failed to load resources configuration file in "
-						+ repo.getName());
+						+ repo.getName(), e);
 				return Optional.absent();
 			}
 		}

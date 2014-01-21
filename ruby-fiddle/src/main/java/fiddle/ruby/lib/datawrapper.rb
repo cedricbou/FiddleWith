@@ -33,19 +33,36 @@ class JsonSugar
     @obj = obj
   end
   
+  def [](i)
+    if @obj.array? then
+      JsonSugar.new(@obj.send("get", i))
+    end
+  end
+  
+  def valueOrSugar(node)
+    if node.nil? then
+      node
+    else
+      if node.value_node? then
+        JsonSugar.new(node).to_hash
+      else
+        JsonSugar.new(node)
+      end
+    end
+  end
+  
   def method_missing(method_name, *args, &block)
     if method_name.to_s =~ /^to_\w+/ then
       to_s.send(method_name, *args, &block)
     else
       o = @obj.send("get", method_name.to_s, &block)
-      r =  JsonSugar.new(o)
-      
+
       if o.nil? then
         o
-      elsif o.value_node? or o.array? then
-        r.to_hash
+      elsif o.array? then
+        o.iterator.map { |node| valueOrSugar(node) }
       else
-        r
+        valueOrSugar(o)
       end
     end
   end

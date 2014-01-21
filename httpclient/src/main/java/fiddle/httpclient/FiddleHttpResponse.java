@@ -16,9 +16,13 @@ import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+
+import fiddle.xml.SimpleXml;
 
 public class FiddleHttpResponse {
 
@@ -68,6 +72,20 @@ public class FiddleHttpResponse {
 							+ "), will return default encoded string", ee);
 			return new String(body);
 		}
+	}
+	
+	public JsonNode json() {
+		final ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.readTree(body());
+		} catch (Exception e) {
+			LOG.warn("Failed to parse body to json", e);
+			return mapper.createObjectNode();
+		}
+	}
+	
+	public SimpleXml xml() {
+		return new SimpleXml(body()); 
 	}
 
 	public Header[] headers() {
