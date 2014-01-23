@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 
 import fiddle.httpclient.FiddleHttpResponse;
 
@@ -24,7 +25,7 @@ public class FiddleResponseBuilder {
 	public Response ok(final Object entity) {
 		LOG.debug("building ok response for {}", entity);
 		
-		final JsonNode normalized = mapper.valueToTree(entity);
+		final JsonNode normalized = mapper.valueToTree(Optional.fromNullable(entity).or("{}"));
 		
 		if(normalized.isLong()) {
 			return Response.ok(normalized.asLong()).build();

@@ -60,6 +60,27 @@ public class HowToUse {
 	}
 
 	@Test
+	public void templatedGet() {
+		final String html = "<html><body><p>Hello World!</p></body></html>";
+
+		stubFor(get(urlEqualTo("/some/foo/bar"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/html")
+								.withBody(html)));
+
+		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
+				.withUrl("http://localhost:8089/some/{{what}}/bar").withHeader("accept", "text/{{format}}");
+
+		final FiddleHttpResponse response = client.get(ImmutableMap.of("what", "foo", "format", "xml"));
+
+		assertTrue(response.is2XX());
+		assertEquals(html, response.body());
+
+		verify(getRequestedFor(urlMatching("/some/foo/bar")).withHeader("accept", equalTo("text/xml")));
+	}
+	
+	@Test
 	public void basicHttpsGet() {
 		final String html = "<html><body><p>Hello World!</p></body></html>";
 
@@ -137,7 +158,7 @@ public class HowToUse {
 								.withBody(html)));
 
 		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
-				.withUrl("https://localhost:8043/postjson").withBody(new BodyBuilder.SimpleBodyBuilder("Greetings {{name}}"));
+				.withUrl("https://localhost:8043/postjson").withBody(new TemplateStringBuilder.SimpleTemplateStringBuilder("Greetings {{name}}"));
 		
 		final FiddleHttpResponse response = client.post(ImmutableMap.of("name", "John"));
 

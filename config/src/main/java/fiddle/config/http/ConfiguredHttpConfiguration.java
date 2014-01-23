@@ -41,4 +41,8 @@ public class ConfiguredHttpConfiguration {
 		return body;
 	}
 	
+	public ImmutableMap<String, String> headers() {
+		return headers;
+	}
+	
 }

@@ -2,9 +2,10 @@ package fiddle.httpclient;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.annotation.Nullable;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,26 +17,37 @@ import org.apache.http.entity.EntityTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mustachejava.Mustache;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import fiddle.httpclient.TemplateMapBuilder.MustacheMapTemplateMapBuilder;
+import fiddle.httpclient.TemplateStringBuilder.SimpleTemplateStringBuilder;
 
 public class ConfiguredFiddleHttpClient {
 
 	private final HttpClient client;
-	private final String url;
+	private final TemplateStringBuilder url;
 
-	private final BodyBuilder body;
-	
-	private final Optional<Map<String, String>> headers;
-	
-	private final Logger LOG = LoggerFactory.getLogger(ConfiguredFiddleHttpClient.class);
+	private final TemplateStringBuilder body;
 
-	protected ConfiguredFiddleHttpClient(final HttpClient client, final String url) {
-		this(client, url, Optional.<Map<String, String>> absent(), BodyBuilder.EMPTY);
+	private final Optional<TemplateMapBuilder> headers;
+
+	private final Logger LOG = LoggerFactory
+			.getLogger(ConfiguredFiddleHttpClient.class);
+
+	protected ConfiguredFiddleHttpClient(final HttpClient client,
+			final String url) {
+		this(client, new SimpleTemplateStringBuilder(url), Optional
+				.<TemplateMapBuilder> absent(), TemplateStringBuilder.EMPTY);
 	}
 
 	protected ConfiguredFiddleHttpClient(final HttpClient client,
-			final String url, Optional<Map<String, String>> headers, final BodyBuilder body) {
+			final TemplateStringBuilder url,
+			Optional<TemplateMapBuilder> headers,
+			final TemplateStringBuilder body) {
 		this.client = client;
 		this.url = url;
 		this.headers = headers;
@@ -44,35 +56,73 @@ public class ConfiguredFiddleHttpClient {
 
 	public ConfiguredFiddleHttpClient withHeader(final String type,
 			final String value) {
-		final Map<String, String> headers = new HashMap<String, String>(
-				this.headers.or(Maps.<String, String> newHashMap()));
-		headers.put(type, value);
 
-		return new ConfiguredFiddleHttpClient(client, url, Optional.of(headers), body);
+		return new ConfiguredFiddleHttpClient(client, url, Optional.of(headers
+				.transform(
+						new Function<TemplateMapBuilder, TemplateMapBuilder>() {
+							@Override
+							@Nullable
+							public TemplateMapBuilder apply(
+									@Nullable TemplateMapBuilder headers) {
+								return headers.with(type,
+										new SimpleTemplateStringBuilder(value)
+												.template());
+							}
+						}).or(
+						new MustacheMapTemplateMapBuilder(ImmutableMap.of(type,
+								new SimpleTemplateStringBuilder(value)
+										.template())))), body);
 	}
 
 	public ConfiguredFiddleHttpClient withHeaders(
 			final Map<String, String> headers) {
 
-		final Map<String, String> newHeaders = new HashMap<String, String>(
-				this.headers.or(Maps.<String, String> newHashMap()));
-		newHeaders.putAll(headers);
-		
 		return new ConfiguredFiddleHttpClient(client, url,
-				Optional.fromNullable(newHeaders), body);
+				Optional.of(this.headers.transform(
+						new Function<TemplateMapBuilder, TemplateMapBuilder>() {
+							@Override
+							@Nullable
+							public TemplateMapBuilder apply(
+									@Nullable TemplateMapBuilder formerHeaders) {
+								return formerHeaders.with(Maps.transformValues(
+										headers,
+										new Function<String, Mustache>() {
+											@Override
+											@Nullable
+											public Mustache apply(
+													@Nullable String value) {
+												return new SimpleTemplateStringBuilder(
+														value).template();
+											}
+										}));
+							}
+						}).or(
+						new MustacheMapTemplateMapBuilder(Maps.transformValues(
+								headers, new Function<String, Mustache>() {
+									@Override
+									@Nullable
+									public Mustache apply(
+											@Nullable String templateValue) {
+										return new SimpleTemplateStringBuilder(
+												templateValue).template();
+									}
+								})))), body);
 	}
-	
+
 	public ConfiguredFiddleHttpClient withBody(final String body) {
-		return new ConfiguredFiddleHttpClient(client, url, headers, new BodyBuilder.SimpleBodyBuilder(body));
+		return new ConfiguredFiddleHttpClient(client, url, headers,
+				new TemplateStringBuilder.SimpleTemplateStringBuilder(body));
 	}
-	
-	public ConfiguredFiddleHttpClient withBody(final BodyBuilder body) {
+
+	public ConfiguredFiddleHttpClient withBody(final TemplateStringBuilder body) {
 		return new ConfiguredFiddleHttpClient(client, url, headers, body);
 	}
 
-	private void fillInHeadersIfPresent(final HttpRequestBase request) {
+	private void fillInHeadersIfPresent(final HttpRequestBase request,
+			final Object templateValues) {
 		if (headers.isPresent()) {
-			for (final Entry<String, String> entry : headers.get().entrySet()) {
+			for (final Entry<String, String> entry : headers.get()
+					.build(templateValues).entrySet()) {
 				request.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
@@ -80,32 +130,43 @@ public class ConfiguredFiddleHttpClient {
 	}
 
 	public FiddleHttpResponse get() {
-		final HttpGet get = new HttpGet(url);
+		return get(ImmutableMap.of());
+	}
 
-		fillInHeadersIfPresent(get);
-		
+	public FiddleHttpResponse get(final Object templateValues) {
+		final HttpGet get = new HttpGet(url.build(templateValues));
+
+		fillInHeadersIfPresent(get, templateValues);
+
 		try {
 			final HttpResponse response = client.execute(get);
 			return new FiddleHttpResponse(response);
 		} catch (IOException ioe) {
 			LOG.warn("Failed during get request", ioe);
-			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(ioe, null));
+			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(
+					ioe, null));
 		}
 	}
 
 	public FiddleHttpResponse post(final String body) {
-		return this.post(body.getBytes());
+		return this.post(body, ImmutableMap.of());
 	}
 
-	public FiddleHttpResponse post(final byte[] body) {
-		final HttpPost post = new HttpPost(url);
+	public FiddleHttpResponse post(final String body,
+			final Object templateValues) {
+		return this.post(new SimpleTemplateStringBuilder(body), templateValues);
+	}
 
-		fillInHeadersIfPresent(post);
-		
+	public FiddleHttpResponse post(final TemplateStringBuilder bodyBuilder,
+			final Object templateValues) {
+		final HttpPost post = new HttpPost(url.build(templateValues));
+
+		fillInHeadersIfPresent(post, templateValues);
+
 		post.setEntity(new EntityTemplate(new ContentProducer() {
 			@Override
 			public void writeTo(OutputStream os) throws IOException {
-				os.write(body);
+				os.write(bodyBuilder.build(templateValues).getBytes());
 				os.close();
 			}
 		}));
@@ -115,12 +176,17 @@ public class ConfiguredFiddleHttpClient {
 			return new FiddleHttpResponse(response);
 		} catch (IOException ioe) {
 			LOG.warn("Failed during post request", ioe);
-			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(ioe, null));
+			return new FiddleHttpResponse(ExceptionHttpResponseBuilder.failed(
+					ioe, null));
 		}
 	}
-	
+
 	public FiddleHttpResponse post(final Object values) {
-		return post(body.build(values));
+		return post(body, values);
 	}
-	
+
+	public FiddleHttpResponse post() {
+		return post(body, ImmutableMap.of());
+	}
+
 }

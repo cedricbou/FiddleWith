@@ -10,7 +10,7 @@ import com.yammer.dropwizard.client.HttpClientBuilder;
 import fiddle.api.TemplateId;
 import fiddle.config.http.ConfiguredHttpConfiguration;
 import fiddle.config.http.FiddleHttpConfiguration;
-import fiddle.httpclient.BodyBuilder;
+import fiddle.httpclient.TemplateStringBuilder;
 import fiddle.httpclient.ConfiguredFiddleHttpClient;
 import fiddle.httpclient.FiddleHttpClient;
 import fiddle.repository.Repository;
@@ -41,6 +41,15 @@ public class HttpResources {
 			return null;
 		}
 
+		final ConfiguredFiddleHttpClient withHeaders;
+		
+		if(config.configured().get(id).headers() != null) {
+			withHeaders = configured.withHeaders(config.configured().get(id).headers());
+		}
+		else {
+			withHeaders = configured;
+		}
+		
 		final ConfiguredFiddleHttpClient withBody;
 
 		if (config.configured().get(id).body() != null) {
@@ -48,17 +57,17 @@ public class HttpResources {
 					config.configured().get(id).body()));
 
 			if (body.isPresent()) {
-				withBody = configured
-						.withBody(new BodyBuilder.MustacheBodyBuilder(body
+				withBody = withHeaders
+						.withBody(new TemplateStringBuilder.MustacheTemplateStringBuilder(body
 								.get()));
 			} else {
-				withBody = configured.withBody(config.configured().get(id)
+				withBody = withHeaders.withBody(config.configured().get(id)
 						.body());
 			}
 		} else {
-			withBody = configured;
+			withBody = withHeaders;
 		}
-
+		
 		return withBody;
 	}
 

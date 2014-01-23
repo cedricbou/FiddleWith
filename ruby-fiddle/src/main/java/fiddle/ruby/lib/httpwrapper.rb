@@ -5,8 +5,14 @@ JFiddleHttpResponse = FiddleHttpResponse
 
 class JFiddleHttpResponse
   alias old_json json
+  alias old_xml xml
+  
   def json
     JsonSugar.new(old_json)
+  end
+  
+  def xml
+    XmlSugar.new(old_xml)
   end
 end
 

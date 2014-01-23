@@ -89,6 +89,28 @@ public class HttpClientTest {
 
 		verify(getRequestedFor(urlMatching("/greets")));
 	}
+	
+	@Test
+	public void testTemplateUrlGet() throws JsonProcessingException, IOException {
+		final FiddleId id = new FiddleId("templateurlget");
+		final Optional<Fiddle> f = repo.fiddles(WS).open(id);
+
+		final String html = "<html><body><p>Hello World!</p></body></html>";
+
+		stubFor(get(urlEqualTo("/greets/foo/ok"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/html")
+								.withBody(html)));
+
+		final Response r = ex.execute(resources, id, f.get(),
+				MAPPER.readTree("{}"));
+
+		assertEquals(200, r.getStatus());
+		assertEquals(html, r.getEntity().toString());
+
+		verify(getRequestedFor(urlMatching("/greets/foo/ok")));
+	}
 
 	@Test
 	public void testRedirectedGet() throws JsonProcessingException, IOException {
