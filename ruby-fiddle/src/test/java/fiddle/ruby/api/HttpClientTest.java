@@ -34,8 +34,10 @@ import com.yammer.dropwizard.client.HttpClientConfiguration;
 
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
+import fiddle.api.TemplateId;
 import fiddle.api.WorkspaceId;
 import fiddle.httpclient.FiddleHttpClient;
+import fiddle.httpclient.TemplateStringBuilder;
 import fiddle.repository.impl.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
@@ -61,11 +63,25 @@ public class HttpClientTest {
 		File repoDir = new File(new File(url.getFile()).getParentFile(),
 				"repository");
 
+		repo = new RepositoryManager(repoDir, null);
+
 		when(resources.http()).thenReturn(
 				new FiddleHttpClient(new HttpClientBuilder().using(
 						new HttpClientConfiguration()).build()));
 
-		repo = new RepositoryManager(repoDir, null);
+		when(resources.http("foobar"))
+				.thenReturn(
+						new FiddleHttpClient(new HttpClientBuilder().using(
+								new HttpClientConfiguration()).build())
+								.withUrl(
+										"http://localhost:8089/greets/{{p1}}/{{p2}}")
+								.withBody(
+										new TemplateStringBuilder.MustacheTemplateStringBuilder(
+												repo.templates(WS)
+														.open(new TemplateId(
+																"foobar"))
+														.get())));
+
 	}
 
 	@Test
@@ -89,9 +105,10 @@ public class HttpClientTest {
 
 		verify(getRequestedFor(urlMatching("/greets")));
 	}
-	
+
 	@Test
-	public void testTemplateUrlGet() throws JsonProcessingException, IOException {
+	public void testTemplateUrlGet() throws JsonProcessingException,
+			IOException {
 		final FiddleId id = new FiddleId("templateurlget");
 		final Optional<Fiddle> f = repo.fiddles(WS).open(id);
 
@@ -193,6 +210,30 @@ public class HttpClientTest {
 	}
 
 	@Test
+	public void testPreconfiguredPost() throws JsonProcessingException,
+			IOException {
+		final FiddleId id = new FiddleId("preconfiguredhttppost");
+		final Optional<Fiddle> f = repo.fiddles(WS).open(id);
+
+		final String html = "<html><body><p>Hello World!</p></body></html>";
+
+		stubFor(post(urlEqualTo("/greets/foo/ok"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/html")
+								.withBody(html)));
+
+		final Response r = ex.execute(resources, id, f.get(),
+				MAPPER.readTree("{}"));
+
+		assertEquals(200, r.getStatus());
+		assertEquals(html, r.getEntity().toString());
+
+		verify(postRequestedFor(urlMatching("/greets/foo/ok")).withRequestBody(
+				equalTo("{\"foo\":\"bar2\"}")));
+	}
+
+	@Test
 	public void testSimplePostWithHeaders() throws JsonProcessingException,
 			IOException {
 		final FiddleId id = new FiddleId("simplepostwithheaders");
@@ -215,21 +256,21 @@ public class HttpClientTest {
 		verify(postRequestedFor(urlMatching("/greets")).withRequestBody(
 				equalTo("{\"foo\":\"bar\"}")).withHeader("foo", equalTo("bar")));
 	}
-	
+
 	@Test
 	public void testError500Get() throws JsonProcessingException, IOException {
 		final FiddleId id = new FiddleId("error500get");
 		final Optional<Fiddle> f = repo.fiddles(WS).open(id);
 
-		stubFor(get(urlEqualTo("/greets"))
-				.willReturn(
-						aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+		stubFor(get(urlEqualTo("/greets")).willReturn(
+				aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
 
 		final Response r = ex.execute(resources, id, f.get(),
 				MAPPER.readTree("{}"));
 
 		assertEquals(500, r.getStatus());
-		assertEquals("The server failed to respond with a valid HTTP response", r.getEntity().toString());
+		assertEquals("The server failed to respond with a valid HTTP response",
+				r.getEntity().toString());
 
 		verify(getRequestedFor(urlMatching("/greets")));
 	}
@@ -241,11 +282,9 @@ public class HttpClientTest {
 
 		final String html = "<html><body><p>Hello World!</p></body></html>";
 
-		stubFor(post(urlEqualTo("/greets"))
-				.willReturn(
-						aResponse().withFixedDelay(600)
-						.withHeader("content", "text/html")
-						.withBody(html)));
+		stubFor(post(urlEqualTo("/greets")).willReturn(
+				aResponse().withFixedDelay(600)
+						.withHeader("content", "text/html").withBody(html)));
 
 		final Response r = ex.execute(resources, id, f.get(),
 				MAPPER.readTree("{}"));
@@ -256,5 +295,4 @@ public class HttpClientTest {
 		verify(postRequestedFor(urlMatching("/greets")));
 	}
 
-	
 }

@@ -1,2 +1,2 @@
-http.post("http://localhost:8089/greets", '{"foo":"bar"}').body
+http.url("http://localhost:8089/greets").post('{"foo":"bar"}').body
 

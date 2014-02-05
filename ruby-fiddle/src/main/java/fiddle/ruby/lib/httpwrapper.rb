@@ -16,42 +16,59 @@ class JFiddleHttpResponse
   end
 end
 
+class ConfiguredHttpSugar
+  def initialize(http)
+    @http = http
+    yield self if block_given?
+  end
+  
+  # DSL method
+  def header(key, value)
+    @http = @http.with_header(key, value)
+  end
+  
+  def headers(headers = {})
+    @http = @http.with_headers(headers)
+  end
+  
+  # Http Methods
+  def get(templateVars = {})
+    if templateVars.length > 0 then
+      @http.get templateVars
+    else
+      @http.get
+    end
+  end
+  
+  def post(data = nil, templateVars = {})
+    if data then
+      if templateVars.length > 0 then
+        @http.post(data, templateVars)
+      else
+        @http.post(data)
+      end
+    else
+      if templateVars.length > 0 then
+        @http.post(templateVars)
+      else
+        @http.post
+      end
+    end
+  end
+end
+
 class HttpSugar
   
   def initialize(rsc)
     @rsc = rsc
     @http = rsc.http
   end
-  
-  def get(url)
-    @http.with_url(url).get
-  end
-  
-  def getWithOptions(url, options)
-    configured = @http.with_url url
     
-    if options[:headers] then
-      configured = configured.with_headers options[:headers]
-    end
-    
-    configured.get
-  end
-  
-  def post(url, data)
-    @http.with_url(url).post(data)
-  end
-
-  def postWithOptions(url, data, options)
-    configured = @http.with_url url
-    
-    if options[:headers] then
-      configured = configured.with_headers options[:headers]
-    end
-    
-   configured.post(data)
+  def url(url)
+    ConfiguredHttpSugar.new @http.with_url url 
   end
     
   def method_missing(method_name, *args)
-    @rsc.http(method_name.to_s)
+    ConfiguredHttpSugar.new @rsc.http(method_name.to_s)
   end
 end

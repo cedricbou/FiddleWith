@@ -1,2 +1,1 @@
-http.postWithOptions("http://localhost:8089/greets", '{"foo":"bar"}', headers: { 'foo' => 'bar' }).body
-
+http.url("http://localhost:8089/greets").headers({ 'foo' => 'bar' }).post('{"foo":"bar"}').body
