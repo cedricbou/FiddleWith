@@ -26,15 +26,15 @@ public class RubyExecutor {
 	private static Logger LOG = LoggerFactory.getLogger(RubyExecutor.class);
 
 	private final ScriptingContainer ruby = new ScriptingContainer(
-			LocalContextScope.THREADSAFE, LocalVariableBehavior.TRANSIENT);
+			LocalContextScope.CONCURRENT, LocalVariableBehavior.TRANSIENT);
 
 	private final FiddleResponseBuilder responseBuilder = new FiddleResponseBuilder(
 			mapper);
 
 	private final static String includer = "require 'prefiddle.rb'; "
 			+ "r = __r; response = __r;" + "d = JsonSugar.new(__d);"
-			+ "dbi = DbiSugar.new(__rsc);"
-			+ "http = HttpSugar.new(__rsc);" + "\n";
+			+ "dbi = DbiSugar.new(__rsc);" + "http = HttpSugar.new(__rsc);"
+			+ "\n";
 
 	private void initRuby() {
 		final List<String> paths = ruby.getLoadPaths();
@@ -79,7 +79,6 @@ public class RubyExecutor {
 			final Fiddle fiddle, final JsonNode data) {
 		initRuby();
 
-		ruby.clear();
 		ruby.put("__r", responseBuilder);
 		ruby.put("__d", data);
 		ruby.put("__rsc", resources);
@@ -87,9 +86,14 @@ public class RubyExecutor {
 		LOG.debug("will execute ruby script for fiddle {} with data {}", id,
 				data);
 
-		Object result = ruby.runScriptlet(includer + fiddle.content);
-
-		LOG.debug("fiddle execution result is {}", result);
+		final Object result;
+		
+		try {
+			result = ruby.runScriptlet(includer + fiddle.content);
+			LOG.debug("fiddle execution result is {}", result);
+		} finally {
+			ruby.clear();
+		}
 
 		final Response r;
 
