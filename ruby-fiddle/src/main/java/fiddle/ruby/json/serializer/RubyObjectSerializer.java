@@ -7,6 +7,8 @@ import org.jruby.RubyObject;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.InstanceVariables;
 import org.jruby.runtime.builtin.Variable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +17,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class RubyObjectSerializer extends JsonSerializer<RubyObject> {
 
+	private final Logger LOG = LoggerFactory.getLogger(RubyObjectSerializer.class);
+	
 	@Override
 	public void serialize(RubyObject robj, JsonGenerator gen,
 			SerializerProvider prov) throws IOException,
@@ -42,6 +46,7 @@ public class RubyObjectSerializer extends JsonSerializer<RubyObject> {
 		
 		}
 		else {
+			LOG.debug("undetected type ({} / {}) will serialize object as string : {}", robj.getType(), robj.getClass(), robj.toString());
 			gen.writeString(robj.toString());
 		}
 	}
