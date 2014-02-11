@@ -6,6 +6,7 @@ import java.util.Map;
 
 import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceFileName;
+import fiddle.repository.PermanentlyCachedRepository;
 import fiddle.repository.Repository;
 import fiddle.repository.RepositoryManager;
 import fiddle.repository.impl.ResourcesRepository;
@@ -18,7 +19,7 @@ public class ResourcesRepositoryManager implements
 
 	private final File repoFolder;
 
-	private final Map<WorkspaceId, ResourcesRepository> resourcesCache = new HashMap<WorkspaceId, ResourcesRepository>();
+	private final Map<WorkspaceId, Repository<Resources, String, ResourceFileName>> resourcesCache = new HashMap<WorkspaceId, Repository<Resources, String, ResourceFileName>>();
 
 	private final HttpResourceBuilder httpBuilder;
 	private final DbiResourceBuilder dbiBuilder;
@@ -42,9 +43,9 @@ public class ResourcesRepositoryManager implements
 			final WorkspaceId id) {
 
 		if (!resourcesCache.containsKey(id)) {
-			final ResourcesRepository combined = new ResourcesRepository(id,
+			final Repository<Resources, String, ResourceFileName> combined = new PermanentlyCachedRepository<Resources, String, ResourceFileName>(new ResourcesRepository(id,
 					new File(repoFolder, id.id), new File(repoFolder,
-							WorkspaceId.COMMON.id), dbiBuilder, httpBuilder);
+							WorkspaceId.COMMON.id), dbiBuilder, httpBuilder));
 
 			resourcesCache.put(id, combined);
 		}

@@ -45,7 +45,7 @@ public class TemplateRepository implements
 		try {
 			return Optional.of(mf.compile(id.id + ".mustache"));
 		} catch (Exception e) {
-			LOG.warn("failed to compile mustache", e);
+			LOG.warn("failed to compile mustache : {}", e.getMessage());
 			return Optional.absent();
 		}
 	}
