@@ -12,8 +12,8 @@ import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.views.ViewBundle;
 
 import fiddle.password.PasswordManager;
-import fiddle.repository.impl.RepositoryManager;
-import fiddle.resources.Resources;
+import fiddle.repository.manager.RepositoryManager;
+import fiddle.resources.builder.DropwizardBuilders;
 
 public class App extends Service<AppConfiguration> {
 	
@@ -36,8 +36,7 @@ public class App extends Service<AppConfiguration> {
 
 		env.addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(new AppAuthenticator(passwords), "fiddle with!"));
 		
-		final RepositoryManager repository = new RepositoryManager(new File(config.getRepository()), env);
-
-		env.addResource(new FiddleResource(repository));
+		final RepositoryManager repoManager = new RepositoryManager(new File(config.getRepository()), env);
+		env.addResource(new FiddleResource(repoManager));
 	}
 }

@@ -6,46 +6,50 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.mustachejava.Mustache;
 import com.google.common.base.Optional;
 import com.yammer.dropwizard.config.ConfigurationFactory;
-import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.validation.Validator;
 
-import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceConfiguration;
 import fiddle.config.ResourceFileName;
-import fiddle.resources.Resources;
 import fiddle.repository.Repository;
 import fiddle.resources.FallbackResources;
+import fiddle.resources.Resources;
 import fiddle.resources.WorkspaceResources;
+import fiddle.resources.builder.DbiResourceBuilder;
+import fiddle.resources.builder.HttpResourceBuilder;
 
 public class ResourcesRepository implements
 		Repository<Resources, String, ResourceFileName> {
 
 	private final File repo;
+	private final File repoFB;
 
-	private final Repository<Mustache, String, TemplateId> templates;
-	private final Repository<Mustache, String, TemplateId> commonTemplates;
-	
-	private final Environment env;
+	private final HttpResourceBuilder httpBuilder;
+	private final DbiResourceBuilder dbiBuilder;
+
+	private final WorkspaceId wId;
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-	public ResourcesRepository(final File repo,
-			final Repository<Mustache, String, TemplateId> templates,
-			final Repository<Mustache, String, TemplateId> commonTemplates,
-			final Environment env) {
-		this.env = env;
+	public ResourcesRepository(final WorkspaceId wId, final File repo,
+			final File fallbackRepo, final DbiResourceBuilder dbiBuilder,
+			final HttpResourceBuilder httpBuilder) {
+		this.wId = wId;
+		this.dbiBuilder = dbiBuilder;
+		this.httpBuilder = httpBuilder;
 		this.repo = repo;
-		this.templates = templates;
-		this.commonTemplates = commonTemplates;
+		this.repoFB = fallbackRepo;
 	}
 
 	@Override
 	public Optional<Resources> open(ResourceFileName id) {
 		@SuppressWarnings("static-access")
 		final File rf = new File(repo, id.name);
+
+		@SuppressWarnings("static-access")
+		final File rfFB = new File(repoFB, id.name);
 
 		final ConfigurationFactory<ResourceConfiguration> configurationFactory = ConfigurationFactory
 				.forClass(ResourceConfiguration.class, new Validator());
@@ -55,9 +59,18 @@ public class ResourcesRepository implements
 				final ResourceConfiguration config = configurationFactory
 						.build(rf);
 
-				return Optional.of((Resources) new FallbackResources(
-						new WorkspaceResources(templates, config, env),
-						new WorkspaceResources(commonTemplates, config, env)));
+				if (rfFB.exists() && rfFB.canRead() && rfFB.isFile()) {
+					final ResourceConfiguration configFallback = configurationFactory
+							.build(rfFB);
+
+					return Optional.of((Resources) new FallbackResources(
+							new WorkspaceResources(wId, config, dbiBuilder,
+									httpBuilder), new WorkspaceResources(wId,
+									configFallback, dbiBuilder, httpBuilder)));
+				} else {
+					return Optional.of((Resources) new WorkspaceResources(wId, config,
+							dbiBuilder, httpBuilder));
+				}
 			} catch (Exception e) {
 				LOG.error("failed to load resources configuration file in "
 						+ repo.getName(), e);

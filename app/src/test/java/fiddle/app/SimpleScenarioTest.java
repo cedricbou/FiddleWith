@@ -1,18 +1,16 @@
 package fiddle.app;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-
-import javax.ws.rs.core.Response;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +27,7 @@ import com.yammer.dropwizard.testing.ResourceTest;
 import com.yammer.dropwizard.validation.Validator;
 
 import fiddle.password.PasswordManager;
-import fiddle.repository.impl.RepositoryManager;
+import fiddle.repository.manager.RepositoryManager;
 
 public class SimpleScenarioTest extends ResourceTest {
 
@@ -48,13 +46,14 @@ public class SimpleScenarioTest extends ResourceTest {
 				getObjectMapperFactory(), getValidator());
 
 		final PasswordManager passwords = config.getUsers();
-
+		
 		final RepositoryManager repo = new RepositoryManager(new File(
 				config.getRepository()), env);
 
 		addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(
 				new AppAuthenticator(passwords), "fiddle with!"));
 		addResource(new FiddleResource(repo));
+		
 	}
 
 	@Test

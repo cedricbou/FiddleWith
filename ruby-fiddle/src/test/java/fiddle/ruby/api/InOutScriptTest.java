@@ -22,7 +22,7 @@ import com.google.common.base.Optional;
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.repository.impl.RepositoryManager;
+import fiddle.repository.manager.RepositoryManager;
 import fiddle.ruby.RubyExecutor;
 
 public class InOutScriptTest {

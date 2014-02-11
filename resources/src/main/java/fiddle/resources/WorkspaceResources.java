@@ -1,14 +1,12 @@
 package fiddle.resources;
 
-import com.github.mustachejava.Mustache;
-import com.yammer.dropwizard.config.Environment;
-
-import fiddle.api.TemplateId;
+import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceConfiguration;
 import fiddle.dbi.DecoratedDbi;
 import fiddle.httpclient.ConfiguredFiddleHttpClient;
 import fiddle.httpclient.FiddleHttpClient;
-import fiddle.repository.Repository;
+import fiddle.resources.builder.DbiResourceBuilder;
+import fiddle.resources.builder.HttpResourceBuilder;
 import fiddle.resources.http.DbiResources;
 import fiddle.resources.http.HttpResources;
 
@@ -17,12 +15,11 @@ public class WorkspaceResources implements Resources {
 	private final HttpResources https;
 	private final DbiResources dbis;
 
-	public WorkspaceResources(
-			final Repository<Mustache, String, TemplateId> templates,
-			final ResourceConfiguration config, final Environment env) {
+	public WorkspaceResources(final WorkspaceId wId,
+			final ResourceConfiguration config, final DbiResourceBuilder dbiBuilder, final HttpResourceBuilder httpBuilder) {
 		
-		this.https = new HttpResources(templates, config.getHttpClients());
-		this.dbis = new DbiResources(config, env);
+		this.https = new HttpResources(wId, config.getHttpClients(), httpBuilder);
+		this.dbis = new DbiResources(wId, config, dbiBuilder);
 	}
 
 	@Override

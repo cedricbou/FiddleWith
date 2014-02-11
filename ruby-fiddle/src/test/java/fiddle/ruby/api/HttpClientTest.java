@@ -38,7 +38,7 @@ import fiddle.api.TemplateId;
 import fiddle.api.WorkspaceId;
 import fiddle.httpclient.FiddleHttpClient;
 import fiddle.httpclient.TemplateStringBuilder;
-import fiddle.repository.impl.RepositoryManager;
+import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 

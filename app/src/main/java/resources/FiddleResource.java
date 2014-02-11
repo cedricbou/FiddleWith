@@ -30,7 +30,7 @@ import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceFileName;
 import fiddle.password.PasswordManager.UserConfiguration;
 import fiddle.repository.CacheableRepository;
-import fiddle.repository.impl.RepositoryManager;
+import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 

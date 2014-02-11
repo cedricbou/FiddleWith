@@ -14,7 +14,7 @@ import com.yammer.dropwizard.config.Environment;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceFileName;
-import fiddle.repository.impl.RepositoryManager;
+import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
 
@@ -44,7 +44,7 @@ public class FiddleCommand extends EnvironmentCommand<AppConfiguration> {
 	protected void run(final Environment environment,
 			final Namespace namespace, final AppConfiguration configuration)
 			throws Exception {
-
+		
 		final RepositoryManager repo = new RepositoryManager(new File(
 				(String) namespace.get("repository")), environment);
 

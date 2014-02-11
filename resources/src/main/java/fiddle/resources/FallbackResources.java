@@ -1,6 +1,7 @@
 package fiddle.resources;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 
 import fiddle.dbi.DecoratedDbi;
 import fiddle.httpclient.ConfiguredFiddleHttpClient;
@@ -16,17 +17,30 @@ public class FallbackResources implements Resources {
 		this.fallback = fallback;
 	}
 
-	public DecoratedDbi dbi(String id) {
-		return Optional.fromNullable(main.dbi(id)).or(fallback.dbi(id));
+	public DecoratedDbi dbi(final String id) {
+		return Optional.fromNullable(main.dbi(id)).or(new Supplier<DecoratedDbi>() {
+			@Override
+			public DecoratedDbi get() {
+				return fallback.dbi(id);
+			}
+		});
 	};
 
 	@Override
 	public FiddleHttpClient http() {
-		return Optional.fromNullable(main.http()).or(fallback.http());
+		return Optional.fromNullable(main.http()).or(new Supplier<FiddleHttpClient>() {
+			public FiddleHttpClient get() {
+				return fallback.http();
+			}
+		});
 	}
 
 	@Override
-	public ConfiguredFiddleHttpClient http(String id) {
-		return Optional.fromNullable(main.http(id)).or(fallback.http(id));
+	public ConfiguredFiddleHttpClient http(final String id) {
+		return Optional.fromNullable(main.http(id)).or(new Supplier<ConfiguredFiddleHttpClient>() {
+			public ConfiguredFiddleHttpClient get() {
+				return fallback.http(id);
+			}
+		});
 	}
 }

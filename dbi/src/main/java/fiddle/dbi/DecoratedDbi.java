@@ -65,4 +65,8 @@ public class DecoratedDbi {
 		}
 	}
 
+	public DBI undecorated() {
+		return dbi;
+	}
+	
 }
