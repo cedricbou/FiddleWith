@@ -12,18 +12,17 @@ import fiddle.repository.RepositoryManager;
 import fiddle.repository.RepositoryResourceLoader;
 import fiddle.repository.impl.TemplateRepository;
 
-public class TemplatesRepositoryManager  implements RepositoryManager<Repository<Mustache, String, TemplateId>> {
-
-	private final File repoFolder;
+public class TemplatesRepositoryManager extends AbstractRepositoryManager
+		implements RepositoryManager<Repository<Mustache, String, TemplateId>> {
 
 	public TemplatesRepositoryManager(final File repoFolder) {
-		this.repoFolder = repoFolder;
+		super(repoFolder);
 	}
 
 	public final Repository<Mustache, String, TemplateId> repo(
 			final WorkspaceId id) {
 		final Repository<Mustache, String, TemplateId> combined = new TemplateRepository(
-				new File(repoFolder, id.id), new File(repoFolder,
+				new File(repoFolder(), id.id), new File(repoFolder(),
 						WorkspaceId.COMMON.id));
 
 		return new GuavaCachedRepository<Mustache, String, TemplateId>(

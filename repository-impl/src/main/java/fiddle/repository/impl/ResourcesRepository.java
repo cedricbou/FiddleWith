@@ -32,6 +32,8 @@ public class ResourcesRepository implements
 	private final WorkspaceId wId;
 
 	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	
+	private final Optional<WorkspaceResources> common;
 
 	public ResourcesRepository(final WorkspaceId wId, final File repo,
 			final File fallbackRepo, final DbiResourceBuilder dbiBuilder,
@@ -41,15 +43,39 @@ public class ResourcesRepository implements
 		this.httpBuilder = httpBuilder;
 		this.repo = repo;
 		this.repoFB = fallbackRepo;
+		this.common = loadCommon();
 	}
 
+	private Optional<WorkspaceResources> loadCommon() {
+
+		final File rfFB = new File(repoFB, ResourceFileName.name);
+
+		final ConfigurationFactory<ResourceConfiguration> configurationFactory = ConfigurationFactory
+				.forClass(ResourceConfiguration.class, new Validator());
+
+		if (rfFB.exists() && rfFB.canRead() && rfFB.isFile()) {
+
+			try {
+				final ResourceConfiguration config = configurationFactory
+						.build(rfFB);
+
+				return Optional.of(new WorkspaceResources(wId,
+							config, dbiBuilder, httpBuilder));
+			}
+			catch(Exception e) {
+				LOG.error("failed to load resources configuration file in "
+						+ repoFB.getName(), e);
+				return Optional.absent();
+			}
+		}
+		
+		return Optional.absent();
+	}
+	
 	@Override
 	public Optional<Resources> open(ResourceFileName id) {
 		@SuppressWarnings("static-access")
 		final File rf = new File(repo, id.name);
-
-		@SuppressWarnings("static-access")
-		final File rfFB = new File(repoFB, id.name);
 
 		final ConfigurationFactory<ResourceConfiguration> configurationFactory = ConfigurationFactory
 				.forClass(ResourceConfiguration.class, new Validator());
@@ -59,14 +85,10 @@ public class ResourcesRepository implements
 				final ResourceConfiguration config = configurationFactory
 						.build(rf);
 
-				if (rfFB.exists() && rfFB.canRead() && rfFB.isFile()) {
-					final ResourceConfiguration configFallback = configurationFactory
-							.build(rfFB);
-
+				if (common.isPresent()) {
 					return Optional.of((Resources) new FallbackResources(
 							new WorkspaceResources(wId, config, dbiBuilder,
-									httpBuilder), new WorkspaceResources(wId,
-									configFallback, dbiBuilder, httpBuilder)));
+									httpBuilder), common.get()));
 				} else {
 					return Optional.of((Resources) new WorkspaceResources(wId, config,
 							dbiBuilder, httpBuilder));

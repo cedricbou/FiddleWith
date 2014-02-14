@@ -2,6 +2,7 @@ package app;
 
 import java.io.File;
 
+import resources.FiddleEditorResource;
 import resources.FiddleResource;
 
 import com.yammer.dropwizard.Service;
@@ -13,7 +14,6 @@ import com.yammer.dropwizard.views.ViewBundle;
 
 import fiddle.password.PasswordManager;
 import fiddle.repository.manager.RepositoryManager;
-import fiddle.resources.builder.DropwizardBuilders;
 
 public class App extends Service<AppConfiguration> {
 	
@@ -37,6 +37,10 @@ public class App extends Service<AppConfiguration> {
 		env.addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(new AppAuthenticator(passwords), "fiddle with!"));
 		
 		final RepositoryManager repoManager = new RepositoryManager(new File(config.getRepository()), env);
+		
+		repoManager.resourcesManager().preload();
+		
 		env.addResource(new FiddleResource(repoManager));
+		env.addResource(new FiddleEditorResource());
 	}
 }
