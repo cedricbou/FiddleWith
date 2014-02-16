@@ -51,6 +51,25 @@ public class RubyExecutor {
 		ruby.setLoadPaths(newPaths);
 	}
 
+	public Response executeMethodIn(final Resources resources,
+			final FiddleId id, final Fiddle fiddle, final JsonNode data) {
+		try {
+			return wrapObjectToResponse(doExecuteMethod(
+					doExecute(resources, id, fiddle, data), "healthcheck"));
+		} catch (EvalFailedException e) {
+			if (e.getCause() != null && e.getCause() instanceof RaiseException) {
+				LOG.error("Ruby fiddle compile error", e);
+				return Response.status(500).entity(e.toString()).build();
+			} else {
+				LOG.error("Ruby fiddle (method) evaluation failed", e);
+				return Response.status(500).entity(e.getMessage()).build();
+			}
+		} catch (Exception e) {
+			LOG.error("Ruby fiddle uncaught exception", e);
+			return Response.status(500).entity(e.getMessage()).build();
+		}
+	}
+
 	public Response execute(final FiddleId id, final Fiddle fiddle,
 			final JsonNode data) {
 		return this.execute(Resources.EMPTY, id, fiddle, data);
@@ -60,7 +79,7 @@ public class RubyExecutor {
 			final Fiddle fiddle, final JsonNode data) {
 
 		try {
-			return doExecute(resources, id, fiddle, data);
+			return wrapObjectToResponse(doExecute(resources, id, fiddle, data));
 		} catch (EvalFailedException e) {
 			if (e.getCause() != null && e.getCause() instanceof RaiseException) {
 				LOG.error("Ruby fiddle compile error", e);
@@ -75,38 +94,57 @@ public class RubyExecutor {
 		}
 	}
 
-	private Response doExecute(final Resources resources, final FiddleId id,
+	private void prepareExecute(final Resources resources, final FiddleId id,
 			final Fiddle fiddle, final JsonNode data) {
 		initRuby();
 
 		ruby.put("__r", responseBuilder);
 		ruby.put("__d", data);
 		ruby.put("__rsc", resources);
+	}
 
-		LOG.debug("will execute ruby script for fiddle {} with data {}", id,
-				data);
+	private void postExecute(final Resources resources, final FiddleId id,
+			final Fiddle fiddle, final JsonNode data) {
+		ruby.clear();
+	}
 
-		final Object result;
-		
-		try {
-			result = ruby.runScriptlet(includer + fiddle.content);
-			LOG.debug("fiddle execution result is {}", result);
-		} finally {
-			ruby.clear();
-		}
+	private Object doExecuteMethod(final Object receiver, final String method) {
+		final Object response = ruby.callMethod(receiver, method,
+				String.class);
+		LOG.debug("called method {}, returned {}", method, response);
+		return response;
+	}
 
+	private Response wrapObjectToResponse(final Object receiver) {
 		final Response r;
 
-		if (result instanceof Response) {
-			r = (Response) result;
+		if (receiver instanceof Response) {
+			r = (Response) receiver;
 		} else {
-			r = responseBuilder.ok(result);
+			r = responseBuilder.ok(receiver);
 		}
 
 		LOG.debug("response status is {} with entity {}", r.getStatus(),
 				r.getEntity());
 
 		return r;
+	}
+
+	private Object doExecute(final Resources resources, final FiddleId id,
+			final Fiddle fiddle, final JsonNode data) {
+
+		prepareExecute(resources, id, fiddle, data);
+
+		LOG.debug("will execute ruby script for fiddle {} with data {}", id,
+				data);
+
+		try {
+			final Object result = ruby.runScriptlet(includer + fiddle.content);
+			LOG.debug("fiddle execution result is {}", result);
+			return result;
+		} finally {
+			postExecute(resources, id, fiddle, data);
+		}
 	}
 
 	private static final ObjectMapper mapper = new ObjectMapper();
