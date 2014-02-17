@@ -36,6 +36,47 @@
 		<version.dropwizard>0.6.2</version.dropwizard>
 	</properties>
 
+    <developers>
+        <developer>
+            <name>Cédric Bou</name>
+            <email>cedricb1101@gmail.com</email>
+            <timezone>+2</timezone>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+	<scm>
+		<connection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</connection>
+		<url>http://github.com/cedricbou/fiddlewith</url>
+		<developerConnection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</developerConnection>
+        <tag>HEAD</tag>
+	</scm>
+
+	<distributionManagement>
+		<downloadUrl>https://github.com/cedricbou/fiddlewith</downloadUrl>
+		<repository>
+			<id>emodroid-cloudbees-release</id>
+			<name>emodroid-cloudbees-release</name>
+			<url>dav:https://repository-emodroid.forge.cloudbees.com/release/</url>
+		</repository>
+		<snapshotRepository>
+			<id>emodroid-cloudbees-release</id>
+			<name>emodroid-cloudbees-release</name>
+			<url>dav:https://repository-emodroid.forge.cloudbees.com/snapshot/</url>
+		</snapshotRepository>
+	</distributionManagement>
+    <issueManagement>
+        <system>github</system>
+        <url>http://github.com/cedricbou/fiddlewith/issues#issue/</url>
+    </issueManagement>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -123,23 +164,4 @@
 		</dependency>
 	</dependencies>
 
-	<scm>
-		<connection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</connection>
-		<url>http://github.com/cedricbou/fiddlewith</url>
-		<developerConnection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</developerConnection>
-	</scm>
-
-	<distributionManagement>
-		<downloadUrl>https://github.com/cedricbou/fiddlewith</downloadUrl>
-		<repository>
-			<id>emodroid-cloudbees-release</id>
-			<name>emodroid-cloudbees-release</name>
-			<url>dav:https://repository-emodroid.forge.cloudbees.com/release/</url>
-		</repository>
-		<snapshotRepository>
-			<id>emodroid-cloudbees-release</id>
-			<name>emodroid-cloudbees-release</name>
-			<url>dav:https://repository-emodroid.forge.cloudbees.com/snapshot/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
