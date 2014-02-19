@@ -5,15 +5,24 @@ import java.io.File;
 import resources.FiddleEditorResource;
 import resources.FiddleResource;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.auth.basic.BasicAuthProvider;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.views.ViewBundle;
+import com.yammer.metrics.core.HealthCheck;
 
+import fiddle.api.Fiddle;
+import fiddle.api.FiddleId;
+import fiddle.api.WorkspaceId;
 import fiddle.password.PasswordManager;
 import fiddle.repository.manager.RepositoryManager;
+import fiddle.ruby.RubyAnalyzer;
+import fiddle.ruby.RubyExecutor;
 
 public class App extends Service<AppConfiguration> {
 	
@@ -40,7 +49,29 @@ public class App extends Service<AppConfiguration> {
 		
 		repoManager.resourcesManager().preload();
 		
-		env.addResource(new FiddleResource(repoManager));
+		final RubyExecutor executor = new RubyExecutor();
+		
+		env.addResource(new FiddleResource(repoManager, executor));
 		env.addResource(new FiddleEditorResource());
+		
+		for(final HealthCheck hc : healthchecks(repoManager, new RubyAnalyzer(executor))) {
+			env.addHealthCheck(hc);
+		}
 	}
+	
+	private ImmutableList<HealthCheck> healthchecks(final RepositoryManager repo, final RubyAnalyzer analyzer) {
+		final Builder<HealthCheck> builder = ImmutableList.<HealthCheck>builder();
+		
+		for(final WorkspaceId wId : repo.fiddlesManager().workspaces()) {
+			for(final FiddleId id : repo.fiddles(wId).ids()) {
+				final Optional<Fiddle> fiddle = repo.fiddles(wId).open(id);
+				if(fiddle.isPresent()) {
+					builder.addAll(analyzer.healthchecks(id, fiddle.get()));
+				}
+			}
+		}
+		
+		return builder.build();
+	}
+
 }

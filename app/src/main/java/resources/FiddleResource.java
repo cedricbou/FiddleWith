@@ -42,8 +42,8 @@ public class FiddleResource {
 	private final RubyExecutor executor;
 	private final RepositoryManager repository;
 
-	public FiddleResource(final RepositoryManager repository) {
-		this.executor = new RubyExecutor();
+	public FiddleResource(final RepositoryManager repository, final RubyExecutor executor) {
+		this.executor = executor;
 		this.repository = repository;
 	}
 

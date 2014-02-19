@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.yammer.dropwizard.config.ConfigurationFactory;
 import com.yammer.dropwizard.validation.Validator;
 
@@ -106,5 +108,18 @@ public class ResourcesRepository implements
 	@Override
 	public void write(ResourceFileName id, String rsc) throws IOException {
 
+	}
+	
+	@Override
+	public ImmutableList<ResourceFileName> ids() {
+		final Builder<ResourceFileName> resources = ImmutableList.<ResourceFileName>builder();
+		
+		final File conf = new File(repo, ResourceFileName.name);
+			
+		if(conf.exists() && conf.canRead()) {
+			resources.add(ResourceFileName.VALUE);
+		}
+		
+		return resources.build();
 	}
 }

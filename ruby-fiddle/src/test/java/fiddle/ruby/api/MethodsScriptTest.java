@@ -45,7 +45,7 @@ public class MethodsScriptTest {
 		final FiddleId add = new FiddleId("healthcheck");
 		final Optional<Fiddle> f = repo.fiddles(WS).open(add);
 
-		final Response r = ex.executeMethodIn(Resources.EMPTY, add, f.get(),
+		final Response r = ex.executeMethodIn(Resources.EMPTY, add, f.get(), "healthcheck",
 				MAPPER.readTree("{}"));
 
 		assertEquals(200, r.getStatus());

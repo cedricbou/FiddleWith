@@ -19,6 +19,7 @@ import org.skife.jdbi.v2.DBI;
 
 import com.github.mustachejava.Mustache;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.yammer.dropwizard.client.HttpClientBuilder;
 import com.yammer.dropwizard.client.HttpClientConfiguration;
@@ -323,5 +324,14 @@ public class HowToUse {
 			assertTrue(true);
 		}
 		
+	}
+	
+	@Test
+	public void verifyRepoIds() {
+		final WorkspaceId wId = new WorkspaceId("workspace1");
+		
+		assertEquals(ImmutableList.of(new FiddleId("script1")), repo.fiddles(wId).ids());
+		assertEquals(ImmutableList.of(new TemplateId("template1")), repo.templates(wId).ids());
+		assertEquals(ImmutableList.of(ResourceFileName.VALUE), repo.resources(wId).ids());
 	}
 }

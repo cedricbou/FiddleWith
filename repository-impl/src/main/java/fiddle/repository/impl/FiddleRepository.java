@@ -1,13 +1,19 @@
 package fiddle.repository.impl;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
@@ -59,6 +65,27 @@ public class FiddleRepository implements Repository<Fiddle, Fiddle, FiddleId> {
 			LOG.error("Failed to write fiddle " + fiddlePath);
 			throw new IOException("file " + fiddlePath + " is not writeable", e);
 		}
+	}
+
+	public ImmutableList<FiddleId> ids() {
+		return ImmutableList.<FiddleId>builder().addAll(Iterators.transform(Iterators.forArray(repo.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				if (pathname.isFile() && pathname.canRead()) {
+					for (final Language lang : Language.values()) {
+						return lang.suffix.equals(Files
+								.getFileExtension(pathname.getName()));
+					}
+				}
+				return false;
+			}
+		})), new Function<File, FiddleId>() {
+			@Override
+			@Nullable
+			public FiddleId apply(@Nullable File input) {
+				return new FiddleId(Files.getNameWithoutExtension(input.getName()));
+			}
+		})).build();
 	}
 
 }

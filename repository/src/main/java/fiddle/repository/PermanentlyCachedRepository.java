@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 public class PermanentlyCachedRepository<ReadRsc, WriteRsc, Id> implements Repository<ReadRsc, WriteRsc, Id>, CacheableRepository<Id> {
@@ -40,5 +41,10 @@ public class PermanentlyCachedRepository<ReadRsc, WriteRsc, Id> implements Repos
 	@Override
 	public void write(Id id, WriteRsc rsc) throws IOException {
 		throw new IllegalAccessError("write in permanently cached repository is not supported yet");
+	}
+	
+	@Override
+	public ImmutableList<Id> ids() {
+		return repoToCache.ids();
 	}
 }

@@ -28,6 +28,7 @@ import com.yammer.dropwizard.validation.Validator;
 
 import fiddle.password.PasswordManager;
 import fiddle.repository.manager.RepositoryManager;
+import fiddle.ruby.RubyExecutor;
 
 public class SimpleScenarioTest extends ResourceTest {
 
@@ -52,7 +53,7 @@ public class SimpleScenarioTest extends ResourceTest {
 
 		addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(
 				new AppAuthenticator(passwords), "fiddle with!"));
-		addResource(new FiddleResource(repo));
+		addResource(new FiddleResource(repo, new RubyExecutor()));
 		
 	}
 

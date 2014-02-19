@@ -52,10 +52,10 @@ public class RubyExecutor {
 	}
 
 	public Response executeMethodIn(final Resources resources,
-			final FiddleId id, final Fiddle fiddle, final JsonNode data) {
+			final FiddleId id, final Fiddle fiddle, final String method, final JsonNode data) {
 		try {
 			return wrapObjectToResponse(doExecuteMethod(
-					doExecute(resources, id, fiddle, data), "healthcheck"));
+					doExecute(resources, id, fiddle, data), method));
 		} catch (EvalFailedException e) {
 			if (e.getCause() != null && e.getCause() instanceof RaiseException) {
 				LOG.error("Ruby fiddle compile error", e);

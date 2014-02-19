@@ -3,6 +3,7 @@ package fiddle.repository;
 import java.io.IOException;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 public class FallbackRepository<ReadRsc, WriteRsc, Id> implements Repository<ReadRsc, WriteRsc, Id> {
 
@@ -22,6 +23,11 @@ public class FallbackRepository<ReadRsc, WriteRsc, Id> implements Repository<Rea
 	@Override
 	public void write(Id id, WriteRsc rsc) throws IOException {
 		main.write(id, rsc);
+	}
+	
+	@Override
+	public ImmutableList<Id> ids() {
+		return main.ids();
 	}
 	
 }
