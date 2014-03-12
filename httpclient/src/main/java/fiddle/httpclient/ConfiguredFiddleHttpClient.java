@@ -5,8 +5,6 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Nullable;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -61,9 +59,8 @@ public class ConfiguredFiddleHttpClient {
 				.transform(
 						new Function<TemplateMapBuilder, TemplateMapBuilder>() {
 							@Override
-							@Nullable
 							public TemplateMapBuilder apply(
-									@Nullable TemplateMapBuilder headers) {
+									TemplateMapBuilder headers) {
 								return headers.with(type,
 										new SimpleTemplateStringBuilder(value)
 												.template());
@@ -81,16 +78,13 @@ public class ConfiguredFiddleHttpClient {
 				Optional.of(this.headers.transform(
 						new Function<TemplateMapBuilder, TemplateMapBuilder>() {
 							@Override
-							@Nullable
 							public TemplateMapBuilder apply(
-									@Nullable TemplateMapBuilder formerHeaders) {
+									TemplateMapBuilder formerHeaders) {
 								return formerHeaders.with(Maps.transformValues(
 										headers,
 										new Function<String, Mustache>() {
 											@Override
-											@Nullable
-											public Mustache apply(
-													@Nullable String value) {
+											public Mustache apply(String value) {
 												return new SimpleTemplateStringBuilder(
 														value).template();
 											}
@@ -100,9 +94,8 @@ public class ConfiguredFiddleHttpClient {
 						new MustacheMapTemplateMapBuilder(Maps.transformValues(
 								headers, new Function<String, Mustache>() {
 									@Override
-									@Nullable
 									public Mustache apply(
-											@Nullable String templateValue) {
+											final String templateValue) {
 										return new SimpleTemplateStringBuilder(
 												templateValue).template();
 									}
@@ -166,7 +159,7 @@ public class ConfiguredFiddleHttpClient {
 		post.setEntity(new EntityTemplate(new ContentProducer() {
 			@Override
 			public void writeTo(OutputStream os) throws IOException {
-				os.write(bodyBuilder.build(templateValues).getBytes());
+				os.write(bodyBuilder.build(templateValues).getBytes(bodyBuilder.encoding()));
 				os.close();
 			}
 		}));

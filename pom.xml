@@ -12,7 +12,6 @@
 	<url>http://fiddlewith.it</url>
 
 	<modules>
-		<module>server</module>
 		<module>xml</module>
 		<module>basket</module>
 		<module>repository</module>

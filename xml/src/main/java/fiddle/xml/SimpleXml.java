@@ -1,6 +1,7 @@
 package fiddle.xml;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 
 import org.apache.axiom.om.OMXMLBuilderFactory;
 
@@ -16,18 +17,24 @@ public class SimpleXml implements MaybeNode {
 	private final ImmutableMap<String, String> ns;
 
 	public SimpleXml(final String content) {
-		this.root = buildRoot(content);
+		this.root = buildRoot(content, Charset.defaultCharset());
 		this.ns = ImmutableMap.<String, String>of();
 	}
+
+	public SimpleXml(final String content, final Charset charset) {
+		this.root = buildRoot(content, charset);
+		this.ns = ImmutableMap.<String, String>of();
+	}
+
 	
 	private SimpleXml(final ElementNode root, final ImmutableMap<String, String> ns) {
 		this.root = root.withNS(ns);
 		this.ns = ns;
 	}
 
-	private ElementNode buildRoot(final String content) {
+	private ElementNode buildRoot(final String content, final Charset charset) {
 		return (ElementNode)ElementNode.some(OMXMLBuilderFactory.createOMBuilder(
-				new ByteArrayInputStream(content.getBytes()))
+				new ByteArrayInputStream(content.getBytes(charset)))
 				.getDocumentElement());
 	}
 

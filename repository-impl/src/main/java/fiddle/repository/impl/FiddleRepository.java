@@ -5,11 +5,10 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -33,6 +32,11 @@ public class FiddleRepository implements Repository<Fiddle, Fiddle, FiddleId> {
 	}
 
 	@Override
+	/**
+	 * Open a fiddle from its id.
+	 * 
+	 * The fiddle content must be encoded with UTF-8.
+	 */
 	public Optional<Fiddle> open(FiddleId id) {
 		for (final Language lang : Language.values()) {
 			final File fiddle = new File(repo, id.id + "." + lang.suffix);
@@ -40,7 +44,7 @@ public class FiddleRepository implements Repository<Fiddle, Fiddle, FiddleId> {
 			if (fiddle.exists() && fiddle.isFile() && fiddle.canRead()) {
 				try (final FileInputStream in = new FileInputStream(fiddle)) {
 					return Optional.of(new Fiddle(new String(ByteStreams
-							.toByteArray(in)), lang));
+							.toByteArray(in), Charsets.UTF_8), lang));
 				} catch (IOException ioe) {
 					LOG.warn(
 							"failed to read fiddle "
@@ -54,11 +58,16 @@ public class FiddleRepository implements Repository<Fiddle, Fiddle, FiddleId> {
 		return Optional.absent();
 	}
 
+	/**
+	 * Write the fiddle content to the corresponding file.
+	 * 
+	 * The content must be UTF-8 encoded.
+	 */
 	public void write(FiddleId id, Fiddle rsc) throws java.io.IOException {
 		final File outFile = new File(repo, id.id + "." + rsc.language.suffix);
 
 		try {
-			Files.write(rsc.content.getBytes(), outFile);
+			Files.write(rsc.content.getBytes(Charsets.UTF_8), outFile);
 		} catch (IOException e) {
 			final String fiddlePath = outFile.getParentFile().getName() + "/"
 					+ outFile.getName();
@@ -81,8 +90,7 @@ public class FiddleRepository implements Repository<Fiddle, Fiddle, FiddleId> {
 			}
 		})), new Function<File, FiddleId>() {
 			@Override
-			@Nullable
-			public FiddleId apply(@Nullable File input) {
+			public FiddleId apply(final File input) {
 				return new FiddleId(Files.getNameWithoutExtension(input.getName()));
 			}
 		})).build();

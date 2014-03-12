@@ -13,6 +13,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.FallbackMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -57,11 +58,16 @@ public class TemplateRepository implements
 	}
 
 	@Override
+	/**
+	 * Write the template content to the corresponding file in the repository.
+	 * 
+	 * The template must be UTF-8 encoded.
+	 */
 	public void write(TemplateId id, String rsc) throws IOException {
 		final File outFile = new File(repo, id + ".mustache");
 
 		try {
-			Files.write(rsc.getBytes(), outFile);
+			Files.write(rsc.getBytes(Charsets.UTF_8), outFile);
 		} catch (IOException e) {
 			throw new IOException("file " + repo.getParentFile().getName()
 					+ "/" + outFile.getName() + " is not writeable", e);
@@ -84,8 +90,7 @@ public class TemplateRepository implements
 							}
 						})), new Function<File, TemplateId>() {
 							@Override
-							@Nullable
-							public TemplateId apply(@Nullable File input) {
+							public TemplateId apply(final File input) {
 								return new TemplateId(Files
 										.getNameWithoutExtension(input
 												.getName()));

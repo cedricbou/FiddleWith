@@ -14,43 +14,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ResourceJsonUtils {
 
 	public static String autoJson(MultivaluedMap<String, String> map) {
-		String json = "{";
+		final StringBuilder jsonBuilder = new StringBuilder();
+		jsonBuilder.append( "{" );
 
 		final Set<String> keys = map.keySet();
 		int j = 0;
 
 		for (final String key : keys) {
-			json += "\"" + key.trim() + "\":";
+			jsonBuilder.append( "\"" ).append( key.trim() ).append( "\":" );
 
 			final List<String> values = map.get(key);
 
 			if (values.size() > 1) {
-				json += "[";
+				jsonBuilder.append( "[" );
 
 				int i = 0; // Why are there no native map, grep, flat, filter or
 							// flatMap in Java :'(
 
 				for (final String value : values) {
-					json += asJsonString(value);
+					jsonBuilder.append( asJsonString(value) );
 
 					if (++i < values.size()) {
-						json += ",";
+						jsonBuilder.append( "," );
 					}
 				}
 
-				json += "]";
+				jsonBuilder.append( "]" );
 			} else {
-				json += asJsonString(map.getFirst(key));
+				jsonBuilder.append( asJsonString(map.getFirst(key)) );
 			}
 
 			if (++j < keys.size()) {
-				json += ",";
+				jsonBuilder.append( "," );
 			}
 		}
 
-		json += "}";
+		jsonBuilder.append( "}" );
 
-		return json;
+		return jsonBuilder.toString();
 	}
 
 	public static String asJsonString(final String str) {

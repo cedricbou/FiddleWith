@@ -7,8 +7,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -70,7 +68,7 @@ public class FiddleHttpResponse {
 					"failed to create String from found charset ("
 							+ charset.toString()
 							+ "), will return default encoded string", ee);
-			return new String(body);
+			return new String(body, Charset.defaultCharset());
 		}
 	}
 	
@@ -97,7 +95,7 @@ public class FiddleHttpResponse {
 				new Function<Header, String>() {
 
 					@Override
-					public String apply(@Nullable Header header) {
+					public String apply(final Header header) {
 						return header.getValue();
 					}
 				});
@@ -108,7 +106,7 @@ public class FiddleHttpResponse {
 				new Function<Header, String>() {
 
 					@Override
-					public String apply(@Nullable Header header) {
+					public String apply(final Header header) {
 						return header.getValue();
 					}
 				});
