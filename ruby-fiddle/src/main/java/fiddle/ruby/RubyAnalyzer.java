@@ -1,9 +1,6 @@
 package fiddle.ruby;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 
@@ -12,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.yammer.metrics.core.HealthCheck;
 
 import fiddle.api.Fiddle;
@@ -23,20 +20,20 @@ import fiddle.resources.Resources;
 public class RubyAnalyzer {
 
 	private final RubyExecutor executor;
-	
-	private final static Pattern methodPattern = Pattern.compile("^\\s*def\\s+(\\w+)");
-	
+		
 	private final Logger LOG = LoggerFactory.getLogger(RubyAnalyzer.class);
 	
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 	
 	private static JsonNode EMPTY_NODE;
-	
+
+	private final RubyMethodMatcher healthCheckMatcher = new RubyMethodMatcher("HealthCheck");
+
 	static {
 		try {
 			EMPTY_NODE = MAPPER.readTree("{}");
 		} catch(Exception e) {
-			EMPTY_NODE = null;
+			throw new IllegalStateException("FATAL : failed to create the empty JSON node constant");
 		}
 	}
 	
@@ -73,34 +70,15 @@ public class RubyAnalyzer {
 		this.executor = executor;
 	}
 	
-	public ImmutableList<HealthCheck> healthchecks(final FiddleId id, final Fiddle fiddle) {
+	public List<HealthCheck> healthchecks(final FiddleId id, final Fiddle fiddle) {
 		LOG.debug("Looking for healthcheck in {}", id);
 		
-		boolean foundTag = false;
-		
-		final List<HealthCheck> healthchecks = new LinkedList<HealthCheck>();
-		
-		for(final String line : Splitter.onPattern("\r?\n").split(fiddle.content)) {
-			if(!foundTag) {
-				foundTag = line.matches("\\s*\\#\\s*\\@HealthCheck(\\s+.*){0,1}");
+
+		return Lists.transform(healthCheckMatcher.methodsFor(fiddle), new Function<String, HealthCheck>() {
+			@Override
+			public HealthCheck apply(final String method) {
+				return new RubyHealthCheck(executor, id, fiddle, method);
 			}
-			
-			if(foundTag) {
-				LOG.debug("found healthcheck tag, looking for method...");
-				if(line.matches("\\s*def\\s+.*")) {
-					final Matcher matcher = methodPattern.matcher(line);
-					if(matcher.find()) {
-						LOG.debug("found method, attempt to find method name...");
-						if(matcher.groupCount() > 0 && null != matcher.group(1)) {
-							LOG.debug("found method name {}", matcher.group(1));
-							healthchecks.add(new RubyHealthCheck(executor, id, fiddle, matcher.group(1)));
-						}
-					}
-					foundTag = false;
-				}
-			}
-		}
-		
-		return ImmutableList.<HealthCheck>builder().addAll(healthchecks).build();
+		});
 	}
 }
