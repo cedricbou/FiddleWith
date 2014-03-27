@@ -20,6 +20,7 @@ import fiddle.api.WorkspaceId;
 import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
+import fiddle.scripting.ScriptExecutor;
 
 public class MethodsScriptTest {
 
@@ -29,7 +30,7 @@ public class MethodsScriptTest {
 
 	private final static ObjectMapper MAPPER = new ObjectMapper();
 
-	private final static RubyExecutor ex = new RubyExecutor();
+	private final static ScriptExecutor ex = new RubyExecutor();
 
 	public MethodsScriptTest() {
 		URL url = this.getClass().getResource("localised.donoterase");

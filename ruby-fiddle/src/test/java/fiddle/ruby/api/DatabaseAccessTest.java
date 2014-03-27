@@ -31,6 +31,7 @@ import fiddle.dbi.DecoratedDbi;
 import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
+import fiddle.scripting.ScriptExecutor;
 
 public class DatabaseAccessTest {
 
@@ -40,7 +41,7 @@ public class DatabaseAccessTest {
 
 	private final static ObjectMapper MAPPER = new ObjectMapper();
 
-	private final static RubyExecutor ex = new RubyExecutor();
+	private final static ScriptExecutor ex = new RubyExecutor();
 
 	private final Resources resources = mock(Resources.class);
 

@@ -16,34 +16,28 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.yammer.dropwizard.auth.Auth;
 import com.yammer.metrics.annotation.Timed;
-import com.yammer.metrics.core.TimerContext;
 
 import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
-import fiddle.config.ResourceFileName;
+import fiddle.execution.FiddleExecutionService;
 import fiddle.password.PasswordManager.UserConfiguration;
 import fiddle.repository.CacheableRepository;
 import fiddle.repository.manager.RepositoryManager;
-import fiddle.resources.Resources;
-import fiddle.ruby.RubyExecutor;
+import fiddle.scripting.ScriptExecutor;
 
 @Path("/fiddle/with/{workspaceId}/{fiddleId}")
 public class FiddleResource {
 
-	private final FiddleMetrics metrics = new FiddleMetrics();
-
-	private final RubyExecutor executor;
 	private final RepositoryManager repository;
+	private final FiddleExecutionService fiddleRun;
 
-	public FiddleResource(final RepositoryManager repository, final RubyExecutor executor) {
-		this.executor = executor;
+	public FiddleResource(final RepositoryManager repository, final ScriptExecutor executor) {
+		this.fiddleRun = new FiddleExecutionService(repository, executor);
 		this.repository = repository;
 	}
 
@@ -56,14 +50,7 @@ public class FiddleResource {
 			@Valid @PathParam("fiddleId") final FiddleId fiddleId,
 			final String body) throws JsonProcessingException, IOException {
 
-		final TimerContext context = metrics.timer(workspaceId, fiddleId)
-				.time();
-
-		try {
-			return doFiddle(workspaceId, fiddleId, body);
-		} finally {
-			context.stop();
-		}
+		return fiddleRun.doFiddle(workspaceId, fiddleId, body);
 	}
 
 	@Timed
@@ -74,15 +61,8 @@ public class FiddleResource {
 			@PathParam("fiddleId") @Valid final FiddleId fiddleId,
 			@Context UriInfo uri) throws JsonProcessingException, IOException {
 
-		final TimerContext context = metrics.timer(workspaceId, fiddleId)
-				.time();
-
-		try {
-			return doFiddle(workspaceId, fiddleId,
+		return fiddleRun.doFiddle(workspaceId, fiddleId,
 					ResourceJsonUtils.autoJson(uri.getQueryParameters()));
-		} finally {
-			context.stop();
-		}
 	}
 
 	@POST
@@ -177,35 +157,4 @@ public class FiddleResource {
 
 		return r.or(Response.status(404).build());
 	}
-
-	private Optional<Fiddle> findFiddle(final WorkspaceId wId,
-			final FiddleId fId) {
-		return repository.fiddles(wId).open(fId);
-	}
-
-	private Response doFiddle(final WorkspaceId workspaceId,
-			final FiddleId fiddleId, final String jsonParams)
-			throws JsonProcessingException, IOException {
-
-		final ObjectMapper mapper = new ObjectMapper();
-		final JsonNode json = mapper.readTree(jsonParams);
-
-		final Optional<Response> r = findFiddle(workspaceId, fiddleId)
-				.transform(new Function<Fiddle, Response>() {
-					@Override
-					public Response apply(Fiddle fiddle) {
-						return executor.execute(
-								repository.resources(workspaceId)
-										.open(ResourceFileName.VALUE)
-										.or(Resources.EMPTY), fiddleId, fiddle,
-								json);
-					}
-				});
-
-		return r.or(Response
-				.status(404)
-				.entity("no found fiddle in " + workspaceId + " script "
-						+ fiddleId).build());
-	}
-
 }

@@ -1,13 +1,15 @@
 package app;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.builder.RouteBuilder;
 
 import resources.FiddleEditorResource;
 import resources.FiddleResource;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.auth.basic.BasicAuthProvider;
@@ -20,12 +22,19 @@ import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.api.WorkspaceId;
 import fiddle.password.PasswordManager;
+import fiddle.repository.manager.FiddlesRepositoryManager.FiddleVisitor;
 import fiddle.repository.manager.RepositoryManager;
-import fiddle.ruby.RubyAnalyzer;
+import fiddle.resources.impl.CamelResources;
 import fiddle.ruby.RubyExecutor;
+import fiddle.ruby.RubyMethodMatcher;
+import fiddle.scripting.ScriptAnalyzer;
+import fiddle.scripting.ScriptExecutor;
+import fiddlewith.camel.component.FiddleComponent;
 
 public class App extends Service<AppConfiguration> {
-	
+
+	private final CamelContext camel = CamelResources.camel;
+
 	public static void main(String[] args) throws Exception {
 		new App().run(args);
 	}
@@ -38,40 +47,52 @@ public class App extends Service<AppConfiguration> {
 		bootstrap.addBundle(new AssetsBundle("/assets/", "/assets/"));
 		bootstrap.addBundle(new ViewBundle());
 	}
-	
+
 	@Override
-	public void run(final AppConfiguration config, final Environment env) throws Exception {
+	public void run(final AppConfiguration config, final Environment env)
+			throws Exception {
 		final PasswordManager passwords = config.getUsers();
 
-		env.addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(new AppAuthenticator(passwords), "fiddle with!"));
-		
-		final RepositoryManager repoManager = new RepositoryManager(new File(config.getRepository()), env);
-		
+		env.addProvider(new BasicAuthProvider<PasswordManager.UserConfiguration>(
+				new AppAuthenticator(passwords), "fiddle with!"));
+
+		final RepositoryManager repoManager = new RepositoryManager(new File(
+				config.getRepository()), env);
+
 		repoManager.resourcesManager().preload();
-		
-		final RubyExecutor executor = new RubyExecutor();
-		
-		env.addResource(new FiddleResource(repoManager, executor));
-		env.addResource(new FiddleEditorResource());
-		
-		for(final HealthCheck hc : healthchecks(repoManager, new RubyAnalyzer(executor))) {
+
+		final ScriptExecutor executor = new RubyExecutor();
+
+		camel.addComponent("fiddle", new FiddleComponent(repoManager, executor));
+
+		final ScriptAnalyzer rubyAnalyzer = new ScriptAnalyzer(executor,
+				new RubyMethodMatcher("HealthCheck"), new RubyMethodMatcher(
+						"CamelRoute"), camel);
+
+		final List<RouteBuilder> routeBuilders = new LinkedList<RouteBuilder>();
+		final List<HealthCheck> healthChecks = new LinkedList<HealthCheck>();
+
+		repoManager.fiddlesManager().visit(new FiddleVisitor() {
+			@Override
+			public void visit(WorkspaceId wid, FiddleId fid, Fiddle fiddle) {
+				healthChecks.addAll(rubyAnalyzer.healthchecks(fid, fiddle));
+
+				routeBuilders.addAll(rubyAnalyzer.camelRoutes(fid, fiddle));
+			}
+		});
+
+		for (final HealthCheck hc : healthChecks) {
 			env.addHealthCheck(hc);
 		}
-	}
-	
-	private ImmutableList<HealthCheck> healthchecks(final RepositoryManager repo, final RubyAnalyzer analyzer) {
-		final Builder<HealthCheck> builder = ImmutableList.<HealthCheck>builder();
-		
-		for(final WorkspaceId wId : repo.fiddlesManager().workspaces()) {
-			for(final FiddleId id : repo.fiddles(wId).ids()) {
-				final Optional<Fiddle> fiddle = repo.fiddles(wId).open(id);
-				if(fiddle.isPresent()) {
-					builder.addAll(analyzer.healthchecks(id, fiddle.get()));
-				}
-			}
+
+		for (final RouteBuilder rb : routeBuilders) {
+			camel.addRoutes(rb);
 		}
-		
-		return builder.build();
+
+		env.addResource(new FiddleResource(repoManager, executor));
+		env.addResource(new FiddleEditorResource());
+
+		camel.start();
 	}
 
 }

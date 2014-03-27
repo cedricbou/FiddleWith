@@ -20,8 +20,10 @@ import fiddle.api.Fiddle;
 import fiddle.api.FiddleId;
 import fiddle.resources.Resources;
 import fiddle.ruby.json.serializer.RubyJacksonModule;
+import fiddle.scripting.FiddleResponseBuilder;
+import fiddle.scripting.ScriptExecutor;
 
-public class RubyExecutor {
+public class RubyExecutor implements ScriptExecutor {
 
 	private static Logger LOG = LoggerFactory.getLogger(RubyExecutor.class);
 
@@ -34,7 +36,7 @@ public class RubyExecutor {
 	private final static String includer = "require 'prefiddle.rb'; "
 			+ "r = __r; response = __r;" + "d = JsonSugar.new(__d);"
 			+ "dbi = DbiSugar.new(__rsc);" + "http = HttpSugar.new(__rsc);"
-			+ "\n";
+			+ "camel = __rsc.camel;" + "\n";
 
 	private void initRuby() {
 		final List<String> paths = ruby.getLoadPaths();
@@ -51,8 +53,18 @@ public class RubyExecutor {
 		ruby.setLoadPaths(newPaths);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * fiddle.ruby.ScriptExecutor#executeMethodIn(fiddle.resources.Resources,
+	 * fiddle.api.FiddleId, fiddle.api.Fiddle, java.lang.String,
+	 * com.fasterxml.jackson.databind.JsonNode)
+	 */
+	@Override
 	public Response executeMethodIn(final Resources resources,
-			final FiddleId id, final Fiddle fiddle, final String method, final JsonNode data) {
+			final FiddleId id, final Fiddle fiddle, final String method,
+			final JsonNode data) {
 		try {
 			return wrapObjectToResponse(doExecuteMethod(
 					doExecute(resources, id, fiddle, data), method));
@@ -70,11 +82,26 @@ public class RubyExecutor {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see fiddle.ruby.ScriptExecutor#execute(fiddle.api.FiddleId,
+	 * fiddle.api.Fiddle, com.fasterxml.jackson.databind.JsonNode)
+	 */
+	@Override
 	public Response execute(final FiddleId id, final Fiddle fiddle,
 			final JsonNode data) {
 		return this.execute(Resources.EMPTY, id, fiddle, data);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see fiddle.ruby.ScriptExecutor#execute(fiddle.resources.Resources,
+	 * fiddle.api.FiddleId, fiddle.api.Fiddle,
+	 * com.fasterxml.jackson.databind.JsonNode)
+	 */
+	@Override
 	public Response execute(final Resources resources, final FiddleId id,
 			final Fiddle fiddle, final JsonNode data) {
 
@@ -109,10 +136,19 @@ public class RubyExecutor {
 	}
 
 	private Object doExecuteMethod(final Object receiver, final String method) {
-		final Object response = ruby.callMethod(receiver, method,
-				String.class);
+		final Object response = ruby.callMethod(receiver, method, String.class);
 		LOG.debug("called method {}, returned {}", method, response);
 		return response;
+	}
+
+	@Override
+	public Object rawExecuteMethodIn(Resources resources, FiddleId id,
+			Fiddle fiddle, String method, Object... params) {
+
+		final Object result = ruby.callMethod(
+				doExecute(resources, id, fiddle, EMPTY_NODE), method, params);
+		LOG.debug("called method {}, returned {}", method, result);
+		return result;
 	}
 
 	private Response wrapObjectToResponse(final Object receiver) {
@@ -150,5 +186,15 @@ public class RubyExecutor {
 	private static final ObjectMapper mapper = new ObjectMapper();
 	{
 		mapper.registerModule(RubyJacksonModule.MODULE);
+	}
+
+	static JsonNode EMPTY_NODE;
+
+	static {
+		try {
+			EMPTY_NODE = mapper.readTree("{}");
+		} catch (Exception e) {
+			throw new Error("fatal : failed to create empty node constant");
+		}
 	}
 }

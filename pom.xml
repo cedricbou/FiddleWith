@@ -24,6 +24,9 @@
 		<module>app</module>
 		<module>password</module>
 		<module>httpclient</module>
+		<module>camel</module>
+		<module>camel-component</module>
+		<module>scripting</module>
 	</modules>
 
 	<properties>
@@ -35,27 +38,27 @@
 		<version.dropwizard>0.6.2</version.dropwizard>
 	</properties>
 
-    <developers>
-        <developer>
-            <name>Cédric Bou</name>
-            <email>cedricb1101@gmail.com</email>
-            <timezone>+2</timezone>
-        </developer>
-    </developers>
+	<developers>
+		<developer>
+			<name>Cédric Bou</name>
+			<email>cedricb1101@gmail.com</email>
+			<timezone>+2</timezone>
+		</developer>
+	</developers>
 
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<scm>
 		<connection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</connection>
 		<url>http://github.com/cedricbou/fiddlewith</url>
 		<developerConnection>scm:git:ssh://git@github.com/cedricbou/fiddlewith.git</developerConnection>
-        <tag>HEAD</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<distributionManagement>
@@ -71,10 +74,10 @@
 			<url>dav:https://repository-emodroid.forge.cloudbees.com/snapshot/</url>
 		</snapshotRepository>
 	</distributionManagement>
-    <issueManagement>
-        <system>github</system>
-        <url>http://github.com/cedricbou/fiddlewith/issues#issue/</url>
-    </issueManagement>
+	<issueManagement>
+		<system>github</system>
+		<url>http://github.com/cedricbou/fiddlewith/issues#issue/</url>
+	</issueManagement>
 
 	<build>
 		<plugins>
@@ -101,77 +104,77 @@
 				</configuration>
 			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.1</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <mavenExecutorId>forked-path</mavenExecutorId>
-                    <tagNameFormat>v@{project.version}</tagNameFormat>
-                    <preparationGoals>clean test</preparationGoals>
-                </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <effort>Max</effort>
-                    <threshold>Default</threshold>
-                    <xmlOutput>true</xmlOutput>
-                    <excludeFilterFile>${basedir}/../findbugs-exclude.xml</excludeFilterFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+					<preparationGoals>clean test</preparationGoals>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Default</threshold>
+					<xmlOutput>true</xmlOutput>
+					<excludeFilterFile>${basedir}/../findbugs-exclude.xml</excludeFilterFile>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<extensions>
@@ -216,6 +219,11 @@
 			<artifactId>dropwizard-testing</artifactId>
 			<version>${version.dropwizard}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>2.12.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>

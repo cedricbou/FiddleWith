@@ -1,5 +1,7 @@
 package fiddle.resources;
 
+import org.apache.camel.CamelContext;
+
 import fiddle.api.WorkspaceId;
 import fiddle.config.ResourceConfiguration;
 import fiddle.dbi.DecoratedDbi;
@@ -7,8 +9,9 @@ import fiddle.httpclient.ConfiguredFiddleHttpClient;
 import fiddle.httpclient.FiddleHttpClient;
 import fiddle.resources.builder.DbiResourceBuilder;
 import fiddle.resources.builder.HttpResourceBuilder;
-import fiddle.resources.http.DbiResources;
-import fiddle.resources.http.HttpResources;
+import fiddle.resources.impl.CamelResources;
+import fiddle.resources.impl.DbiResources;
+import fiddle.resources.impl.HttpResources;
 
 public class WorkspaceResources implements Resources {
 
@@ -34,5 +37,10 @@ public class WorkspaceResources implements Resources {
 	@Override
 	public ConfiguredFiddleHttpClient http(String id) {
 		return https.http(id);
+	}
+	
+	@Override
+	public CamelContext camel() {
+		return CamelResources.camel;
 	}
 }

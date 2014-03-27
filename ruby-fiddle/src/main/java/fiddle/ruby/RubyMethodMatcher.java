@@ -13,8 +13,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 import fiddle.api.Fiddle;
+import fiddle.scripting.ScriptMethodMatcher;
 
-public class RubyMethodMatcher {
+public class RubyMethodMatcher implements ScriptMethodMatcher {
 
 	private final String tagName;
 	
@@ -23,7 +24,7 @@ public class RubyMethodMatcher {
 	private final static Pattern methodPattern = Pattern
 			.compile("^\\s*def\\s+(\\w+)");
 
-	private final Logger LOG = LoggerFactory.getLogger(RubyAnalyzer.class);
+	private final Logger LOG = LoggerFactory.getLogger(RubyMethodMatcher.class);
 
 	public RubyMethodMatcher(final String tagName) {
 		this.tagName = tagName;
@@ -52,6 +53,10 @@ public class RubyMethodMatcher {
 		return tagName.toLowerCase().matches(method.toLowerCase());
 	}
 
+	/* (non-Javadoc)
+	 * @see fiddle.ruby.ScriptMethodMatcher#methodsFor(fiddle.api.Fiddle)
+	 */
+	@Override
 	public List<String> methodsFor(final Fiddle fiddle) {
 		boolean foundTag = false;
 

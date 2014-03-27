@@ -17,6 +17,7 @@ import fiddle.config.ResourceFileName;
 import fiddle.repository.manager.RepositoryManager;
 import fiddle.resources.Resources;
 import fiddle.ruby.RubyExecutor;
+import fiddle.scripting.ScriptExecutor;
 
 public class FiddleCommand extends EnvironmentCommand<AppConfiguration> {
 	/*
@@ -48,7 +49,7 @@ public class FiddleCommand extends EnvironmentCommand<AppConfiguration> {
 		final RepositoryManager repo = new RepositoryManager(new File(
 				(String) namespace.get("repository")), environment);
 
-		final RubyExecutor executor = new RubyExecutor();
+		final ScriptExecutor executor = new RubyExecutor();
 
 		final FiddleId id = new FiddleId((String) namespace.get("fiddle"));
 
