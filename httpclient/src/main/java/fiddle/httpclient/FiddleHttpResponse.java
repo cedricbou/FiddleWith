@@ -45,13 +45,17 @@ public class FiddleHttpResponse {
 		this.charset = Optional.fromNullable(ContentType.getOrDefault(entity)
 				.getCharset());
 
-		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			entity.writeTo(baos);
-			body = baos.toByteArray();
-			// text =
-			// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (entity != null) {
+			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				entity.writeTo(baos);
+				body = baos.toByteArray();
+				// text =
+				// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			body = new byte[0];
 		}
 	}
 
