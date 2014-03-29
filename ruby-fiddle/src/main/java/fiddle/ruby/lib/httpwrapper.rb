@@ -31,6 +31,10 @@ class ConfiguredHttpSugar
     @http = @http.with_headers(headers)
   end
   
+  def trace(&block)
+  	@http.trace(&block)
+  end
+  
   # Http Methods
   def get(templateVars = {})
     if templateVars.length > 0 then

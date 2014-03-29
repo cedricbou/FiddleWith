@@ -13,6 +13,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,10 +23,12 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.yammer.dropwizard.client.HttpClientBuilder;
 import com.yammer.dropwizard.client.HttpClientConfiguration;
 
+import fiddle.httpclient.ConfiguredFiddleHttpClient.HttpTracer;
 import fiddle.httpclient.FiddleHttpClient.Redirect;
 import fiddle.httpclient.FiddleHttpClient.SSL;
 import fiddle.xml.SimpleXml;
@@ -36,6 +41,40 @@ public class HowToUse {
 	private static DefaultHttpClient client() {
 		return (DefaultHttpClient) new HttpClientBuilder().using(
 				new HttpClientConfiguration()).build();
+	}
+
+	@Test
+	public void tracePost() {
+		final String html = "<html><body><p>Hello World!</p></body></html>";
+		final String json = "{\"foo\":56, \"bar\":\"azerty\"}";
+
+		stubFor(post(urlEqualTo("/postjson"))
+				.willReturn(
+						aResponse().withStatus(200)
+								.withHeader("Content-Type", "text/html")
+								.withBody(html)));
+
+		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
+				.withUrl("http://localhost:8089/postjson");
+
+		final List<String> traces = new LinkedList<String>();
+		
+		final FiddleHttpResponse response = client.trace(new HttpTracer() { 
+			public void trace(final byte[] content) {
+				final String s = new String(content, Charsets.UTF_8);
+				traces.add(s);
+			}
+		}).post(json);
+
+		assertTrue(response.is2XX());
+		assertEquals(html, response.body());
+
+		assertEquals(1, traces.size());
+		assertEquals(json, traces.get(0));
+
+		verify(postRequestedFor(urlMatching("/postjson")).withRequestBody(
+				equalTo(json)));
+
 	}
 
 	@Test
@@ -70,16 +109,19 @@ public class HowToUse {
 								.withBody(html)));
 
 		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
-				.withUrl("http://localhost:8089/some/{{what}}/bar").withHeader("accept", "text/{{format}}");
+				.withUrl("http://localhost:8089/some/{{what}}/bar").withHeader(
+						"accept", "text/{{format}}");
 
-		final FiddleHttpResponse response = client.get(ImmutableMap.of("what", "foo", "format", "xml"));
+		final FiddleHttpResponse response = client.get(ImmutableMap.of("what",
+				"foo", "format", "xml"));
 
 		assertTrue(response.is2XX());
 		assertEquals(html, response.body());
 
-		verify(getRequestedFor(urlMatching("/some/foo/bar")).withHeader("accept", equalTo("text/xml")));
+		verify(getRequestedFor(urlMatching("/some/foo/bar")).withHeader(
+				"accept", equalTo("text/xml")));
 	}
-	
+
 	@Test
 	public void basicHttpsGet() {
 		final String html = "<html><body><p>Hello World!</p></body></html>";
@@ -158,9 +200,12 @@ public class HowToUse {
 								.withBody(html)));
 
 		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
-				.withUrl("https://localhost:8043/postjson").withBody(new TemplateStringBuilder.SimpleTemplateStringBuilder("Greetings {{name}}"));
-		
-		final FiddleHttpResponse response = client.post(ImmutableMap.of("name", "John"));
+				.withUrl("https://localhost:8043/postjson").withBody(
+						new TemplateStringBuilder.SimpleTemplateStringBuilder(
+								"Greetings {{name}}"));
+
+		final FiddleHttpResponse response = client.post(ImmutableMap.of("name",
+				"John"));
 
 		assertTrue(response.is2XX());
 		assertEquals(html, response.body());
@@ -169,7 +214,6 @@ public class HowToUse {
 				equalTo("Greetings John")));
 	}
 
-	
 	@Test
 	public void getWithHeaders() {
 		final String html = "<html><body><p>Hello World!</p></body></html>";
@@ -300,7 +344,7 @@ public class HowToUse {
 
 		verify(getRequestedFor(urlMatching("/oldpage")));
 	}
-	
+
 	@Test
 	public void getAsJson() {
 		final String json = "{ \"foo\" : \"Hey\", \"bar\" : \"Joe\" }";
@@ -320,22 +364,20 @@ public class HowToUse {
 		assertEquals(json, response.body());
 
 		final JsonNode node = response.json();
-		
+
 		assertEquals("Hey", node.get("foo").asText());
 		assertEquals("Joe", node.get("bar").asText());
-		
+
 		verify(getRequestedFor(urlMatching("/somejson")));
 	}
-	
+
 	@Test
 	public void getAsXml() {
 		final String xml = "<root><level1><level2><foo>Hey</foo><bar>Joe</bar></level2></level1></root>";
 
-		stubFor(get(urlEqualTo("/somexml"))
-				.willReturn(
-						aResponse().withStatus(200)
-								.withHeader("Content-Type", "text/xml")
-								.withBody(xml)));
+		stubFor(get(urlEqualTo("/somexml")).willReturn(
+				aResponse().withStatus(200)
+						.withHeader("Content-Type", "text/xml").withBody(xml)));
 
 		final ConfiguredFiddleHttpClient client = new FiddleHttpClient(client())
 				.withUrl("https://localhost:8043/somexml");
@@ -346,10 +388,10 @@ public class HowToUse {
 		assertEquals(xml, response.body());
 
 		final SimpleXml node = response.xml();
-		
+
 		assertEquals("Hey", node.get("level1").get("level2").get("foo").value());
 		assertEquals("Joe", node.get("level1").get("level2").get("bar").value());
-		
+
 		verify(getRequestedFor(urlMatching("/somexml")));
 	}
 

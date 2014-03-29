@@ -24,8 +24,9 @@ import fiddle.xml.SimpleXml;
 
 public class FiddleHttpResponse {
 
-	private final Logger LOG = LoggerFactory.getLogger(FiddleHttpResponse.class);
-	
+	private final Logger LOG = LoggerFactory
+			.getLogger(FiddleHttpResponse.class);
+
 	private final int status;
 	private final String statusReason;
 	private final byte[] body;
@@ -44,19 +45,14 @@ public class FiddleHttpResponse {
 		this.charset = Optional.fromNullable(ContentType.getOrDefault(entity)
 				.getCharset());
 
-		if (this.is2XX()) {
-			try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				entity.writeTo(baos);
-				body = baos.toByteArray();
-				// text =
-				// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			body = new byte[] {};
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			entity.writeTo(baos);
+			body = baos.toByteArray();
+			// text =
+			// Optional.of(baos.toString((charset.or(Charset.defaultCharset())).name()));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-
 	}
 
 	public String body() {
@@ -71,7 +67,7 @@ public class FiddleHttpResponse {
 			return new String(body, Charset.defaultCharset());
 		}
 	}
-	
+
 	public JsonNode json() {
 		final ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -81,9 +77,9 @@ public class FiddleHttpResponse {
 			return mapper.createObjectNode();
 		}
 	}
-	
+
 	public SimpleXml xml() {
-		return new SimpleXml(body()); 
+		return new SimpleXml(body());
 	}
 
 	public Header[] headers() {
@@ -127,17 +123,17 @@ public class FiddleHttpResponse {
 	public boolean is5XX() {
 		return status >= 500 && status < 600;
 	}
-	
+
 	public int status() {
 		return status;
 	}
-	
+
 	public String statusReason() {
 		return statusReason;
 	}
 
 	@Override
 	public String toString() {
-		return status + " [" + body() + "]";
+		return status + "(" + statusReason + ") => [" + body() + "]";
 	}
 }

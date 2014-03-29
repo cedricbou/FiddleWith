@@ -36,20 +36,36 @@ public class ConfiguredFiddleHttpClient {
 	private final Logger LOG = LoggerFactory
 			.getLogger(ConfiguredFiddleHttpClient.class);
 
+	private final HttpTracer tracer;
+	
+	public static interface HttpTracer {
+		public void trace(final byte[] content);
+	}
+	
+	protected final static HttpTracer NOTRACE = new HttpTracer() {
+		public void trace(byte[] content) {};
+	};
+	
 	protected ConfiguredFiddleHttpClient(final HttpClient client,
 			final String url) {
 		this(client, new SimpleTemplateStringBuilder(url), Optional
-				.<TemplateMapBuilder> absent(), TemplateStringBuilder.EMPTY);
+				.<TemplateMapBuilder> absent(), TemplateStringBuilder.EMPTY, NOTRACE);
 	}
 
 	protected ConfiguredFiddleHttpClient(final HttpClient client,
 			final TemplateStringBuilder url,
 			Optional<TemplateMapBuilder> headers,
-			final TemplateStringBuilder body) {
+			final TemplateStringBuilder body,
+			final HttpTracer tracer) {
 		this.client = client;
 		this.url = url;
 		this.headers = headers;
 		this.body = body;
+		this.tracer = tracer;
+	}
+	
+	public ConfiguredFiddleHttpClient trace(final HttpTracer tracer) {
+		return new ConfiguredFiddleHttpClient(client, url, headers, body, tracer);
 	}
 
 	public ConfiguredFiddleHttpClient withHeader(final String type,
@@ -68,7 +84,7 @@ public class ConfiguredFiddleHttpClient {
 						}).or(
 						new MustacheMapTemplateMapBuilder(ImmutableMap.of(type,
 								new SimpleTemplateStringBuilder(value)
-										.template())))), body);
+										.template())))), body, tracer);
 	}
 
 	public ConfiguredFiddleHttpClient withHeaders(
@@ -99,16 +115,16 @@ public class ConfiguredFiddleHttpClient {
 										return new SimpleTemplateStringBuilder(
 												templateValue).template();
 									}
-								})))), body);
+								})))), body, tracer);
 	}
 
 	public ConfiguredFiddleHttpClient withBody(final String body) {
 		return new ConfiguredFiddleHttpClient(client, url, headers,
-				new TemplateStringBuilder.SimpleTemplateStringBuilder(body));
+				new TemplateStringBuilder.SimpleTemplateStringBuilder(body), tracer);
 	}
 
 	public ConfiguredFiddleHttpClient withBody(final TemplateStringBuilder body) {
-		return new ConfiguredFiddleHttpClient(client, url, headers, body);
+		return new ConfiguredFiddleHttpClient(client, url, headers, body, tracer);
 	}
 
 	private void fillInHeadersIfPresent(final HttpRequestBase request,
@@ -159,7 +175,9 @@ public class ConfiguredFiddleHttpClient {
 		post.setEntity(new EntityTemplate(new ContentProducer() {
 			@Override
 			public void writeTo(OutputStream os) throws IOException {
-				os.write(bodyBuilder.build(templateValues).getBytes(bodyBuilder.encoding()));
+				final byte[] content = bodyBuilder.build(templateValues).getBytes(bodyBuilder.encoding());
+				tracer.trace(content);
+				os.write(content);
 				os.close();
 			}
 		}));
