@@ -43,6 +43,10 @@ public class FiddleExecutionService {
 	private JsonNode singleValueToUnderscore(final Object value) {
 		final ObjectNode node = JsonNodeFactory.instance.objectNode();
 		
+		if(value == null) {
+			return node;
+		}
+		
 		if(value instanceof Long) {
 			node.put("_", (Long)value);
 		}
@@ -74,6 +78,7 @@ public class FiddleExecutionService {
 	public Response doFiddle(final WorkspaceId workspaceId,
 			final FiddleId fiddleId, final Object params)
 			throws JsonProcessingException, IOException  {
+		
 		final TimerContext context = metrics.timer(workspaceId, fiddleId)
 				.time();
 

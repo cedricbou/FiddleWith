@@ -109,7 +109,7 @@ public class RubyExecutor implements ScriptExecutor {
 			return wrapObjectToResponse(doExecute(resources, id, fiddle, data));
 		} catch (EvalFailedException e) {
 			if (e.getCause() != null && e.getCause() instanceof RaiseException) {
-				LOG.error("Ruby fiddle compile error", e);
+				LOG.error("Ruby fiddle compile error in {}", id, e);
 				return Response.status(500).entity(e.toString()).build();
 			} else {
 				LOG.error("Ruby fiddle evaluation failed", e);
