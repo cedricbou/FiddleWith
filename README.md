@@ -146,11 +146,98 @@ return response.auto http.url('http://www.google.fr/unknownpage').get
 > **Improvement** : The response object needs support for more http response code and custom http code.
 > This is in the roadmap.
 
+### Using a database ###
 
+Configuration is done in the workspace file `resources.conf`. Configuration is easy and uses YAML (no tabs in the file, only spaces!) :
 
+```yaml
+databases:
+   foo:
+      driverClass: org.h2.Driver
+      url: jdbc:h2:mem:foo
+      user: "sa"
+      password: ""
 
+   bar:
+      driverClass: org.h2.Driver
+      url: jdbc:h2:mem:foo
+      user: "sa"
+      password: ""
 
+```
 
+To use the database in the fiddle :
 
+```ruby
+# Return the first row as a hash
+customer = dbi.foo.first("select * from customer limit 1")
 
+# You can return this directly as the fiddle response
+return customer 
+
+# Get a number 
+age = dbi.bar.number("select age from person where name = 'John Doe' limit 1")
+
+# Get a text
+age = dbi.foo.text("select title from person where name = 'John Doe' limit 1")
+
+# Get an array
+persons = dbi.foo.query("select name, age, title from person where age < 35")
+```
+
+You can obviously use query parameters :
+
+```ruby
+persons = dbi.foo.query("select name, age, title from person where age < ?", 35)
+books = dbi.bar.query("select title, isbn from book where genre = ? and author = ?", "SciFi", "Bordage")
+```
+
+It is possible to insert or update :
+
+```ruby
+dbi.foo.update("insert into book values ('Harry Potter', 'ISBN-1...', 'Magical', 'Rowling')")
+dbi.foo.update("update book set genre = 'Adventure' where title = ?", 'Harry Potter')
+```
+
+By default, fiddle will open and close a transaction for each query, you can control transactions as well :
+
+```ruby
+dbi.bar.in_transaction { |h|
+  h.update("insert into person (name, age) values ('John Doe', 31)")
+  h.update("insert into person (name, age) values ('Mickey Mouse', 70)")
+}
+```
+
+### Calling HTTP services ###
+
+You can call other http url. Fiddle provides default timeout for any of your http calls. It is set to 500ms.
+
+```ruby
+# Getting the content
+content = http.url('http://www.google.fr').get.body
+
+# Reading a json, assuming an URL returning a JSON like {"metrics" : { "temperature" : "5" }}.
+temp = http.url('http://foobar.com/meteoAsAService/Paris').json.metrics.temperature.to_i
+
+# You can do the same with XML, assuming an URL return a XML like
+# <meteo><metrics><temperature>5</temperature>5 degrees</metrics></meteo>
+temp = http.url('http://foobar.com/meteoAsAService/Paris?format=xml').xml.metrics.temperature.text
+```
+
+You can post data :
+
+```ruby
+r = http.url('http://foobar.com/aWebService').post('{"name":"John Doe", "age":31}')
+return {
+ :status => r.status,
+ :reason => r.status_reason,
+ :content => r.body
+}
+```
+
+Fiddle supports templates for your post and get requests :
+
+```ruby
+# TODO : to document
+```
 
