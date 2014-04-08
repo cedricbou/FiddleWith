@@ -3,19 +3,19 @@ FiddleWith.It!
 
 [![Build Status](https://travis-ci.org/cedricbou/FiddleWith.png?branch=master)](https://travis-ci.org/cedricbou/FiddleWith)
 
-Build prototypes or experiment quick features, in a few minutes, even from a tablet
-or during meetings.
+Build prototypes, experiment quick features or create micro projects in short time.
 
 This project is under development, only basic features are available for the moments.
 
-FiddleWith.it is a framework built over DropWizard. It allows very
+FiddleWith.it is built over DropWizard. It allows very
 Rapid Feature Development using Ruby scripts (the Fiddles!).
 
-You write ruby scripts, taking some parameter as JSon post data or the 
-URL query string, write some business login in Ruby, return a ruby object,
-a hash, a string, a number, or a fully qualified HTTP response object.
+You write ruby scripts, execute them from a browser or an http client.
+Parameters are passed in as JSon post data or in the URL query string.
 
-FiddleWith.It provides tools and quick access to many commons features,
+The result is transformed to JSON.
+
+FiddleWith.It provides tools and quick access to many common development features,
 such a SQL queries and transactions, HTTP requests with the ability to use
 templates for POST data, and many more in the futures.
 
