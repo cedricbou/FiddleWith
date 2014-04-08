@@ -63,4 +63,35 @@ To use another directory as repository, create a configuration file :
 > java -jar app/target/app-0.1.0-SNAPSHOT.jar
 
 
+My first fiddle
+---------------
+
+Go into your repository directory, and then create a workspace :
+
+> mkdir calculator && cd calculator
+
+We'll create a simple fiddle doing just a simple addition.
+
+> echo "d.a + d.b" > add.rb
+
+Then go where the jar and configuration files are located and run FiddleWith.it :
+
+> java -jar app-0.1.0-SNAPSHOT.jar myapplication.conf
+
+Try your calculator :
+
+> curl http://localhost:8080/fiddle/with/calculator/add?a=3&b=10
+
+Will output :
+
+> 13
+
+Ok, you're done.
+
+
+
+
+
+
+
 
