@@ -60,7 +60,10 @@ It will use the user directory as the default repository.
 To use another directory as repository, create a configuration file :
 
 > echo "repository: /any/dir/here" > myapplication.conf
-> java -jar app/target/app-0.1.0-SNAPSHOT.jar
+
+And then run fiddle with the configuration you've created :
+
+> java -jar app/target/app-0.1.0-SNAPSHOT.jar myapplication.conf
 
 
 My first fiddle
@@ -89,6 +92,24 @@ Will output :
 Ok, you're done.
 
 
+Quick user guide
+----------------
+
+### Fiddle and parameters ###
+
+You can pass parameter in the query string :
+
+> http://localhost:8080/fiddle/with/myfiddle?name=Foo&company=Bar
+
+Or you can post a json object :
+
+> curl -XPOST http://localhost:8080/fiddle/with/myfiddle -d '{"name": "Foo", "company": "Bar"}'
+
+To read the parameter from the fiddle, you will use the **d** (like data) object :
+
+> puts d.name
+
+> puts d.company
 
 
 
