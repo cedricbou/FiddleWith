@@ -107,9 +107,47 @@ Or you can post a json object :
 
 To read the parameter from the fiddle, you will use the **d** (like data) object :
 
-> puts d.name
+```ruby
+puts d.name
+puts d.company
+```
 
-> puts d.company
+### Fiddle and response ###
+
+Fiddle with automatically try to serialize anything you return from the fiddle script in JSON and emit an HTTP 200 response.
+
+You can return most ruby types :
+
+```ruby
+# Ruby hashes
+return { :a => 'Foo', :ttt => 'Bar' }
+
+# Ruby array 
+return [:one, :two, :three]
+
+# Ruby primitives
+return 2.65
+return 100000
+return "hello"
+return :hello
+```
+
+Sometimes, you want to have control on the http response from your fiddle. It is possible with the **response** object :
+
+```ruby
+# Returning a 404 HTTP status
+return response._404
+return response._404 "not found customer in database"
+
+# Forwarding a response from an inner http call
+return response.auto http.url('http://www.google.fr/unknownpage').get
+```
+
+> **Improvement** : The response object needs support for more http response code and custom http code.
+> This is in the roadmap.
+
+
+
 
 
 
